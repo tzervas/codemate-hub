@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "codemate-hub"
-version = "0.3.0"
+version = "0.4.0"
 description = "Dockerized Agentic Coding Assistant with Ollama, Langflow, and Code Server"
 readme = "README.md"
 requires-python = "==3.12.11"
@@ -26,15 +26,16 @@ classifiers = [
 ]
 
 dependencies = [
-  "crewai==0.51.1",
-  "langgraph==0.2.5",
-  "langchain==0.2.16",
-  "langchain-community==0.2.16",
-  "langchain-chroma==0.1.4",
-  "ollama==0.3.3",
-  "sentence-transformers==3.2.1",
-  "pydantic==2.9.2",
-  "pyyaml==6.0.2",
+  "crewai>=0.51.1",
+  "langgraph>=0.2.5",
+  "langchain>=0.3.0",
+  "langchain-community>=0.3.0",
+  "langchain-chroma>=0.1.4",
+  "langchain-ollama>=0.2.0",
+  "ollama>=0.3.3",
+  "sentence-transformers>=3.2.1",
+  "pydantic>=2.9.2",
+  "pyyaml>=6.0.2",
 ]
 
 [project.optional-dependencies]
