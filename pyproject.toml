@@ -4,13 +4,23 @@ build-backend = "hatchling.build"
 
 [project]
 name = "giggitty-cluster"
-version = "0.2.0"
+version = "0.2.4"
 description = "Dockerized Agentic Coding Assistant with Ollama, Langflow, and Code Server"
 readme = "README.md"
 requires-python = ">=3.12"
 license = {text = "MIT"}
 authors = [
-  {name = "Giggitty Team", email = "info@giggitty.dev"}
+  {name = "Giggitty Team", email = "dev@giggitty.dev"}
+]
+keywords = ["llm", "agents", "docker", "ollama", "langchain", "coding-assistant"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Software Development :: Libraries :: Python Modules",
 ]
 
 dependencies = [
@@ -43,7 +53,7 @@ target-version = ['py312']
 line-length = 100
 target-version = "py312"
 select = ["E", "F", "W"]
-ignore = ["E501"]  # Line too long - handled by black
+ignore = ["E501"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
