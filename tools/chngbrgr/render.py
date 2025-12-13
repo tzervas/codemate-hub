@@ -15,7 +15,7 @@ import re
 from collections import defaultdict
 from typing import Dict, List, Optional, Tuple
 
-from scripts.chngbrgr.config import (
+from tools.chngbrgr.config import (
     CHANGE_TYPE_PREFIXES,
     CHANGELOG_PATH,
     CONTRIBUTOR_AI,
@@ -23,9 +23,9 @@ from scripts.chngbrgr.config import (
     CONTRIBUTOR_HUMAN,
     SNAPSHOT_PREFIX,
 )
-from scripts.chngbrgr.git import classify_areas, get_commits_since, get_merge_prs_since
-from scripts.chngbrgr.models import CommitInfo
-from scripts.chngbrgr.trackers import group_trackers
+from tools.chngbrgr.git import classify_areas, get_commits_since, get_merge_prs_since
+from tools.chngbrgr.models import CommitInfo
+from tools.chngbrgr.trackers import group_trackers
 
 
 def strip_header(changelog_text: str) -> str:
@@ -65,8 +65,9 @@ def existing_snapshot_dates(history: str) -> List[str]:
         List of date strings in YYYY-MM-DD format
     """
     # Build regex from SNAPSHOT_PREFIX constant to stay aligned
-    escaped_prefix = re.escape(SNAPSHOT_PREFIX.strip())
-    pattern = re.compile(rf"^{escaped_prefix}(\d{{4}}-\d{{2}}-\d{{2}})$")
+    # Note: SNAPSHOT_PREFIX includes trailing space, so use rstrip() for regex escaping
+    escaped_prefix = re.escape(SNAPSHOT_PREFIX.rstrip())
+    pattern = re.compile(rf"^{escaped_prefix} ?(\d{{4}}-\d{{2}}-\d{{2}})$")
     dates: List[str] = []
     for line in history.splitlines():
         match = pattern.match(line.strip())
@@ -236,7 +237,9 @@ def extract_tracker_hashes_from_history(
     current_date: Optional[str] = None
 
     for line in history.splitlines():
-        date_match = re.match(r"^## Snapshot (\d{4}-\d{2}-\d{2})$", line.strip())
+        # Use SNAPSHOT_PREFIX constant to match snapshot headings
+        escaped_prefix = re.escape(SNAPSHOT_PREFIX.rstrip())
+        date_match = re.match(rf"^{escaped_prefix} ?(\d{{4}}-\d{{2}}-\d{{2}})$", line.strip())
         if date_match:
             current_date = date_match.group(1)
             continue

@@ -9,7 +9,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import List, Optional
 
-from scripts.chngbrgr.config import CONTRIBUTOR_HUMAN
+from tools.chngbrgr.config import CONTRIBUTOR_HUMAN
 
 
 @dataclass

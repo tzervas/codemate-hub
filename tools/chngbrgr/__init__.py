@@ -11,6 +11,6 @@ Modules:
     render: Snapshot and changelog rendering
 """
 
-from scripts.chngbrgr.render import render_changelog
+from tools.chngbrgr.render import render_changelog
 
 __all__ = ["render_changelog"]

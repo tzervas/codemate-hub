@@ -9,7 +9,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Dict, List
 
-from scripts.chngbrgr.config import TRACKERS_DIR
+from tools.chngbrgr.config import TRACKERS_DIR
 
 
 def read_tracker(path: Path) -> Dict[str, object]:
@@ -41,7 +41,11 @@ def read_tracker(path: Path) -> Dict[str, object]:
         lower_name = name.lower()
         start = None
         for idx, line in enumerate(lines):
-            if line.strip().lower() == lower_name:
+            # Strip leading '#' and whitespace to match both:
+            # - "Summary of Work" (plain text)
+            # - "# Summary of Work" (markdown heading)
+            normalized = line.strip().lstrip("#").strip().lower()
+            if normalized == lower_name:
                 start = idx + 1
                 break
         if start is None:
