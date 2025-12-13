@@ -2,9 +2,12 @@
 
 _Last updated: 2025-12-13_
 
-## Completed Tasks
 
-### Infrastructure Tracker
+## Snapshot 2025-12-13
+
+### Completed Tasks
+
+#### Infrastructure Tracker <!-- hash:4c1576d0 -->
 - Status: ✅ COMPLETE
 - Completion Date: 2024-12-13
 
@@ -33,7 +36,7 @@ Highlights:
 - Added: Docker image build test, smoke test (dry-run), documentation checks
 - Triggers on push/PR to relevant branches with comprehensive reporting
 
-### Models & Data Tracker
+#### Models & Data Tracker <!-- hash:a586f024 -->
 - Status: ✅ COMPLETE
 - Completion Date: 2024-12-13
 
@@ -66,87 +69,78 @@ Highlights:
 Progress Log:
 - 2025-12-13: Finalized uv installation flow in CI (`ci: pin uv installer invocation`).
 
-## Active Tasks
-
-### Application & Pipeline Tracker
+#### Application & Pipeline Tracker <!-- hash:a402ba9d -->
 - Status: ✅ COMPLETE
-- Start Date: 2025-12-13
 - Completion Date: 2025-12-13
 - Branch: feature/task-03-application
 
 Highlights:
-- Subtask 3.1: Implement Pipeline Orchestration
-  - Created `src/pipeline.py` with fixture-based testing support (~330 lines)
-  - Implemented `PipelineResult` dataclass for structured results
-  - Implemented `PipelineError`, `HTTPError`, `SchemaValidationError` exception classes
-  - Created injectable client abstraction (`OllamaClient` protocol)
-  - Implemented `FixtureClient`, `HTTPErrorFixtureClient`, `MalformedFixtureClient`
-  - Added Pydantic models for response validation (`OllamaResponse`, `EmbeddingResponse`)
-  - Comprehensive structured logging for all execution paths
-  - Standalone execution mode for manual testing
+- Subtask 3.1: Pipeline Orchestration Implementation
+- Created `src/pipeline.py` with ~330 lines of production code
+- Implemented structured result types: `PipelineResult` dataclass
+- Implemented exception hierarchy: `PipelineError`, `HTTPError`, `SchemaValidationError`
+- Created injectable client abstraction via `OllamaClient` protocol
+- Implemented three fixture clients: `FixtureClient`, `HTTPErrorFixtureClient`, `MalformedFixtureClient`
+- Added Pydantic models for schema validation: `OllamaResponse`, `EmbeddingResponse`
+- Comprehensive structured logging with timestamps and log levels
+- Standalone execution mode for manual testing and validation
 - Subtask 3.2: Test Infrastructure & Fixtures
-  - Created `tests/` directory with pytest infrastructure
-  - Created `tests/fixtures/` with JSON test fixtures
-  - Four fixture files: success, HTTP error, malformed schema, embeddings
-  - Comprehensive fixture documentation (README.md)
+- Created `tests/` directory structure with pytest configuration
+- Created `tests/fixtures/` with comprehensive JSON test fixtures
+- Four fixture files covering all test matrix scenarios:
+- * `ollama_success.json` - Well-formed Ollama response (HTTP 200 equivalent)
+- * `ollama_http_error.json` - HTTP error response (503 Service Unavailable)
+- * `ollama_malformed.json` - Malformed response missing required fields
+- * `embedding_success.json` - Well-formed embedding response
+- Created `tests/fixtures/README.md` documenting fixture schemas and usage
 - Subtask 3.3: Regression Test Suite
-  - Created `tests/test_pipeline.py` with 19 test cases
-  - Test classes: TestPipelineSuccess (3), TestPipelineHTTPError (3), TestPipelineMalformedSchema (3)
-  - Additional test classes: TestPipelineFixtures (4), TestPipelineDefaultBehavior (3), TestPipelineResult (3)
-  - 100% pass rate on all test matrix scenarios
-  - All tests run in fixture mode (no live Ollama required)
-  - Fast execution: ~0.14s for full suite
+- Created `tests/test_pipeline.py` with 19 comprehensive test cases
+- Test coverage breakdown:
+- * TestPipelineSuccess: 3 tests (basic success, embeddings, response content)
+- * TestPipelineHTTPError: 3 tests (failure result, no embeddings, duration tracking)
+- * TestPipelineMalformedSchema: 3 tests (validation failure, no embeddings, error logging)
+- * TestPipelineFixtures: 4 tests (verify fixture structure and integrity)
+- * TestPipelineDefaultBehavior: 3 tests (default client, embeddings off, model selection)
+- * TestPipelineResult: 3 tests (result structure and field validation)
+- All 19 tests pass with 100% success rate
+- Execution time: ~0.14s for full suite (fast enough for CI)
+- All tests operate in fixture mode (no live Ollama dependency)
 - Subtask 3.4: CI/CD Integration
-  - Added `pipeline-tests` job to CI workflow
-  - Runs pytest with verbose output
-  - Integrated into test-results summary
-  - Dependencies installed via uv
+- Added `pipeline-tests` job to `.github/workflows/ci.yml`
+- Configured with Python toolchain setup via custom action
+- Installs minimal dependencies (pydantic, pytest) via uv
+- Runs pytest with verbose output and short traceback
+- Integrated into test-results summary job
+- Proper dependency ordering (needs: python-checks)
 - Subtask 3.5: Documentation Updates
-  - Updated README.md with pipeline testing section (~35 lines)
-  - Documented test matrix coverage
-  - Added local testing instructions
-  - Updated CHANGELOG.md with Task 03 completion
-
-Test Matrix Coverage:
-✅ Success: HTTP 200, well-formed body, embeddings persisted, result returned
-✅ HTTP Error: non-200 response, PipelineError raised, memory untouched, failure logged
-✅ Malformed Schema: missing/invalid fields, validation failure, memory untouched, failure logged
-
-Files Created:
-- `src/pipeline.py` (330 lines)
-- `tests/__init__.py`
-- `tests/fixtures/__init__.py`
-- `tests/fixtures/README.md`
-- `tests/fixtures/ollama_success.json`
-- `tests/fixtures/ollama_http_error.json`
-- `tests/fixtures/ollama_malformed.json`
-- `tests/fixtures/embedding_success.json`
-- `tests/test_pipeline.py` (280 lines, 19 tests)
-
-Files Modified:
-- `.github/workflows/ci.yml` (+23 lines: pipeline-tests job)
-- `README.md` (+35 lines: pipeline testing documentation)
-- `CHANGELOG.md` (Task 03 completion entry)
+- Updated `README.md` with comprehensive pipeline testing section
+- Added local testing instructions (both in/out of container)
+- Documented test matrix coverage with checkmarks
+- Explained fixture mode vs live mode operation
+- Updated `CHANGELOG.md` with detailed Task 03 completion entry
+- Documented all files created/modified with line counts
 
 Progress Log:
 - 2025-12-13: Created feature branch `feature/task-03-application` to begin Task 03 subtasks.
-- 2025-12-13: Implemented complete fixture-based pipeline with 19 passing tests.
+- 2025-12-13: Implemented complete fixture-based pipeline orchestration with dependency injection.
+- 2025-12-13: Created comprehensive test suite with 19 tests covering all matrix scenarios.
 - 2025-12-13: Integrated pipeline tests into CI/CD workflow.
-- 2025-12-13: ✅ Task 03 completed - all subtasks finished and validated.
+- 2025-12-13: ✅ Task 03 completed - all acceptance criteria met.
 
-## Pending Tasks
 
-### Langflow Tracker
+### Pending Tasks
+
+#### Langflow Tracker <!-- hash:e1efca75 -->
 - Status: NOT STARTED
 
-### Enclaves (Zephyr) Tracker
+#### Enclaves (Zephyr) Tracker <!-- hash:e1efca75 -->
 - Status: NOT STARTED
 
-### Developer UX Tracker
+#### Developer UX Tracker <!-- hash:e1efca75 -->
 - Status: NOT STARTED
 
-### Automation & Scripts Tracker
+#### Automation & Scripts Tracker <!-- hash:e1efca75 -->
 - Status: NOT STARTED
 
-### Docs & QA Tracker
+#### Docs & QA Tracker <!-- hash:e1efca75 -->
 - Status: NOT STARTED
