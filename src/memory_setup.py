@@ -17,11 +17,12 @@ from typing import Optional
 from langchain_chroma import Chroma
 from langchain_community.embeddings import OllamaEmbeddings
 
-# Constants
-DEFAULT_MODEL = "qwen2.5-coder:7b-q4_0"
-DEFAULT_OLLAMA_URL = "http://ollama:11434"
-DEFAULT_CHROMA_DIR = "./chroma_db"
-DEFAULT_COLLECTION_NAME = "documents"
+from src.constants import (
+    DEFAULT_CHROMA_DIR,
+    DEFAULT_COLLECTION_NAME,
+    DEFAULT_MODEL,
+    DEFAULT_OLLAMA_URL,
+)
 
 
 def initialize_memory(
