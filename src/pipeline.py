@@ -8,14 +8,13 @@ The pipeline operates in two modes:
 1. Fixture mode (testing): Uses pre-recorded JSON responses for deterministic tests
 2. Live mode (production): Makes real API calls to Ollama
 
-Environment Variables:
+Environment Variables (for future live mode):
   OLLAMA_BASE_URL: Ollama API endpoint (default: http://ollama:11434)
   CHROMA_DB_DIR: Path to persistent Chroma database (default: ./chroma_db)
 """
 
 import json
 import logging
-import os
 import sys
 from dataclasses import dataclass
 from pathlib import Path
