@@ -1,0 +1,70 @@
+services:
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    runtime: nvidia
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:11434/api/tags"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  langflow:
+    image: langflowai/langflow:latest
+    container_name: langflow
+    ports:
+      - "7860:7860"
+    volumes:
+      - ./langflow_data:/app/langflow/.langflow
+      - ./src:/app/src
+    depends_on:
+      ollama:
+        condition: service_healthy
+    environment:
+      - LANGFLOW_DATABASE_URL=sqlite:///./langflow_data/langflow.db
+      - OLLAMA_BASE_URL=http://ollama:11434
+
+  code-server:
+    image: linuxserver/code-server:latest
+    container_name: code-server
+    ports:
+      - "8080:8443"
+    volumes:
+      - ./src:/config/workspace
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - PASSWORD=${PASSWORD}
+    depends_on:
+      - app
+
+  app:
+    build: .
+    container_name: coding-assistant
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./src:/app/src
+      - chroma_db:/app/chroma_db
+      - ./zephyr:/app/zephyr
+      - ./insights:/app/insights
+    depends_on:
+      ollama:
+        condition: service_healthy
+      langflow:
+        condition: service_started
+    environment:
+      - OLLAMA_BASE_URL=http://ollama:11434
+      - CHROMA_DB_DIR=/app/chroma_db
+    command: tail -f /dev/null
+
+volumes:
+  ollama_data:
+  chroma_db:

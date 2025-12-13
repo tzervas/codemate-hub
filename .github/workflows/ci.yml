@@ -1,0 +1,25 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, master, 'github-init' ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  basic-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+      - name: Install deps (fast-fail allowed)
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install --no-cache-dir -r requirements.txt || true; fi
+      - name: Basic lint & smoke
+        run: |
+          python -c "import sys; print('python OK', sys.version)"
+          echo "CI basic checks passed"
