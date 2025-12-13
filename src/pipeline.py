@@ -31,13 +31,20 @@ from src.constants import (
 )
 
 
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format="[%(asctime)s] %(levelname)s - %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S",
-)
+# Module logger - configuration should be done by the application, not the library
 logger = logging.getLogger(__name__)
+
+
+def _configure_logging() -> None:
+    """Configure logging for standalone execution.
+
+    This should only be called from the CLI/entrypoint, not when imported as a library.
+    """
+    logging.basicConfig(
+        level=logging.INFO,
+        format="[%(asctime)s] %(levelname)s - %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S",
+    )
 
 
 # Exception classes
@@ -170,7 +177,7 @@ def run_pipeline(
     model: str = DEFAULT_MODEL,
     client: Optional[OllamaClient] = None,
     persist_embeddings: bool = False,
-    memory_dir: Optional[str] = None,
+    fixtures_dir: Optional[Path] = None,
 ) -> PipelineResult:
     """
     Run the coding assistant pipeline.
@@ -180,7 +187,7 @@ def run_pipeline(
         model: Model name to use
         client: Optional client for dependency injection (defaults to fixture client)
         persist_embeddings: Whether to persist embeddings to Chroma
-        memory_dir: Directory for memory persistence (uses CHROMA_DB_DIR if None)
+        fixtures_dir: Directory containing test fixtures (for fixture client fallback)
 
     Returns:
         PipelineResult with success status and details
@@ -192,7 +199,8 @@ def run_pipeline(
 
     # Default to fixture client for testing
     if client is None:
-        fixtures_dir = Path(__file__).parent.parent / "tests" / "fixtures"
+        if fixtures_dir is None:
+            fixtures_dir = Path(__file__).parent.parent / "tests" / "fixtures"
         client = FixtureClient(fixtures_dir)
         logger.info("Using fixture client (testing mode)")
 
@@ -284,6 +292,9 @@ if __name__ == "__main__":
     Standalone execution for testing.
     Usage: python src/pipeline.py
     """
+    # Configure logging only for CLI execution
+    _configure_logging()
+
     print("=" * 60)
     print("Pipeline Test Run (Fixture Mode)")
     print("=" * 60)

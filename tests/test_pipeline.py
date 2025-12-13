@@ -21,6 +21,7 @@ from src.pipeline import (
     HTTPErrorFixtureClient,
     MalformedFixtureClient,
 )
+from src.constants import DEFAULT_MODEL
 
 
 @pytest.fixture
@@ -58,6 +59,20 @@ def embedding_failure_client(fixtures_dir):
     return _EmbeddingFailureClient(fixtures_dir)
 
 
+@pytest.fixture
+def malformed_embedding_client(fixtures_dir):
+    """Client that returns malformed embedding responses for testing."""
+
+    class _MalformedEmbeddingClient(FixtureClient):
+        def embed(self, text: str, model: str) -> dict:
+            # Return structurally valid response with invalid embedding type
+            return {
+                "embedding": "not-a-list",  # Wrong type to trigger schema validation
+            }
+
+    return _MalformedEmbeddingClient(fixtures_dir)
+
+
 class TestPipelineSuccess:
     """Test successful pipeline execution."""
     
@@ -71,7 +86,7 @@ class TestPipelineSuccess:
         
         assert result.success is True
         assert result.response is not None
-        assert result.model == "qwen2.5-coder:7b-q4_0"
+        assert result.model == DEFAULT_MODEL
         assert result.error is None
         assert result.duration_ms is not None
         assert result.duration_ms > 0
@@ -97,6 +112,19 @@ class TestPipelineSuccess:
             persist_embeddings=True,
         )
 
+        assert result.success is True
+        assert result.embeddings_stored is False
+        assert result.error is None
+
+    def test_malformed_embedding_response_graceful_handling(self, malformed_embedding_client):
+        """Malformed embedding responses should not fail the pipeline."""
+        result = run_pipeline(
+            "Write a hello world function",
+            client=malformed_embedding_client,
+            persist_embeddings=True,
+        )
+
+        # Pipeline should succeed, embeddings should not be stored
         assert result.success is True
         assert result.embeddings_stored is False
         assert result.error is None
@@ -290,7 +318,7 @@ class TestPipelineDefaultBehavior:
             client=fixture_client,
         )
         
-        assert result.model == "qwen2.5-coder:7b-q4_0"
+        assert result.model == DEFAULT_MODEL
 
 
 class TestPipelineResult:
