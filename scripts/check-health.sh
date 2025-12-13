@@ -1,47 +1,60 @@
 #!/usr/bin/env bash
+# Wait for services to become healthy. 
+# Usage: 
+#   ./scripts/check-health.sh [timeout_seconds] [service_name]
+# Examples:
+#   ./scripts/check-health.sh 120        # Check all services with 120s timeout
+#   ./scripts/check-health.sh 60 ollama  # Check only ollama with 60s timeout
+
 set -euo pipefail
 
-# Wait for services to become healthy. Usage: ./scripts/check-health.sh [timeout_seconds]
 TIMEOUT=${1:-120}
+SERVICE=${2:-all}  # 'all', 'ollama', 'langflow', or 'app'
 SLEEP=3
 END=$((SECONDS + TIMEOUT))
 
 check() {
-  URL=$1
-  if curl --silent --fail --max-time 5 "$URL" >/dev/null; then
+  local URL=$1
+  if curl --silent --fail --max-time 5 "$URL" >/dev/null 2>&1; then
     return 0
   else
     return 1
   fi
 }
 
-echo "Waiting up to ${TIMEOUT}s for services..."
+echo "Waiting up to ${TIMEOUT}s for services (${SERVICE})..."
 
-until check "http://localhost:11434/api/tags"; do
-  if [ $SECONDS -ge $END ]; then
-    echo "ollama did not become available in time" >&2
-    exit 1
-  fi
-  sleep $SLEEP
-done
-echo "ollama OK"
+if [ "$SERVICE" = "ollama" ] || [ "$SERVICE" = "all" ]; then
+  while ! check "http://localhost:11434/api/tags"; do
+    if [ $SECONDS -ge $END ]; then
+      echo "❌ ollama did not become available in time" >&2
+      exit 1
+    fi
+    sleep $SLEEP
+  done
+  echo "✓ ollama OK"
+fi
 
-until check "http://localhost:7860"; do
-  if [ $SECONDS -ge $END ]; then
-    echo "langflow did not become available in time" >&2
-    exit 1
-  fi
-  sleep $SLEEP
-done
-echo "langflow OK"
+if [ "$SERVICE" = "langflow" ] || [ "$SERVICE" = "all" ]; then
+  while ! check "http://localhost:7860"; do
+    if [ $SECONDS -ge $END ]; then
+      echo "❌ langflow did not become available in time" >&2
+      exit 1
+    fi
+    sleep $SLEEP
+  done
+  echo "✓ langflow OK"
+fi
 
-until check "http://localhost:8000"; do
-  if [ $SECONDS -ge $END ]; then
-    echo "app did not become available in time" >&2
-    exit 1
-  fi
-  sleep $SLEEP
-done
-echo "app OK"
+if [ "$SERVICE" = "app" ] || [ "$SERVICE" = "all" ]; then
+  while ! check "http://localhost:8000"; do
+    if [ $SECONDS -ge $END ]; then
+      echo "❌ app did not become available in time" >&2
+      exit 1
+    fi
+    sleep $SLEEP
+  done
+  echo "✓ app OK"
+fi
 
-echo "All services healthy"
+echo "✅ Service checks passed"
