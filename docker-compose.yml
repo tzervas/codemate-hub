@@ -6,9 +6,12 @@ services:
       - "11434:11434"
     volumes:
       - ollama_data:/root/.ollama
-    runtime: nvidia
+    # Optional: uncomment next line if NVIDIA GPU available (requires nvidia-docker)
+    # runtime: nvidia
     environment:
-      - NVIDIA_VISIBLE_DEVICES=all
+      # Uncomment if using GPU: - NVIDIA_VISIBLE_DEVICES=all
+      - OLLAMA_NUM_PARALLEL=4
+      - OLLAMA_NUM_THREAD=4
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:11434/api/tags"]
       interval: 30s
@@ -63,7 +66,10 @@ services:
     environment:
       - OLLAMA_BASE_URL=http://ollama:11434
       - CHROMA_DB_DIR=/app/chroma_db
-    command: tail -f /dev/null
+    # Keep container alive for interactive use; override cmd in production
+    stdin_open: true
+    tty: true
+    command: /bin/bash
 
 volumes:
   ollama_data:
