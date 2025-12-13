@@ -1,0 +1,43 @@
+# Environment and secrets
+.env
+.env.*
+!.env.ci        # CI environment - safe to commit (test values only)
+!.env.example   # Example env template - safe to commit
+.secrets
+
+# Python artifacts
+.venv/
+venv/
+env/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+
+# Editor and OS files
+.DS_Store
+.vscode/
+.idea/
+
+# Local DBs and volumes
+chroma_db/
+langflow_data/
+
+# Docker / build
+.dockerignore
+dist/
+build/
+*.egg-info/
+/.cache
+
+# Keys and certificates
+*.pem
+*.key
+*.crt
+.gnupg/
+.ssh/
+
+# Other
+.coverage

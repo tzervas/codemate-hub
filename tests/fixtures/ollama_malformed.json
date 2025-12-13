@@ -1,0 +1,5 @@
+{
+  "model": "qwen2.5-coder:7b-q4_0",
+  "response": "Some response text",
+  "missing_required_field": "done"
+}
