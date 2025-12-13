@@ -1,0 +1,55 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "giggitty-cluster"
+version = "0.2.0"
+description = "Dockerized Agentic Coding Assistant with Ollama, Langflow, and Code Server"
+readme = "README.md"
+requires-python = ">=3.12"
+license = {text = "MIT"}
+authors = [
+  {name = "Giggitty Team", email = "info@giggitty.dev"}
+]
+
+dependencies = [
+  "crewai==0.51.1",
+  "langgraph==0.2.5",
+  "langchain==0.2.16",
+  "langchain-community==0.2.16",
+  "langchain-chroma==0.1.4",
+  "ollama==0.3.3",
+  "sentence-transformers==3.2.1",
+  "pydantic==2.9.2",
+  "pyyaml==6.0.2",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=7.0",
+  "black>=23.0",
+  "ruff>=0.1.0",
+]
+
+[tool.uv]
+python-version = "3.12"
+
+[tool.uv.sources]
+# Define any custom package sources if needed
+
+[tool.black]
+line-length = 100
+target-version = ['py312']
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+select = ["E", "F", "W"]
+ignore = ["E501"]  # Line too long - handled by black
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"
+python_classes = "Test*"
+python_functions = "test_*"
