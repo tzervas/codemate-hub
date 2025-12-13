@@ -4,9 +4,7 @@
 
 set -euo pipefail
 
-EXEMPT_COMMITS=(
-    62802c2f2d196142fe81723dce1e0f08995f0ba3
-)
+EXEMPT_COMMITS=()
 
 is_exempt_commit() {
     local sha="$1"
