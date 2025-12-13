@@ -1,4 +1,9 @@
+# Environment and secrets
 .env
+.env.*
+.secrets
+
+# Python artifacts
 .venv/
 venv/
 env/
@@ -8,14 +13,29 @@ __pycache__/
 *.pyd
 .pytest_cache/
 .mypy_cache/
+
+# Editor and OS files
 .DS_Store
 .vscode/
-/.venv
-chrom a_db/
-chroma_db/
 .idea/
-.coverage
+
+# Local DBs and volumes
+chroma_db/
+langflow_data/
+
+# Docker / build
+.dockerignore
 dist/
 build/
 *.egg-info/
 /.cache
+
+# Keys and certificates
+*.pem
+*.key
+*.crt
+.gnupg/
+.ssh/
+
+# Other
+.coverage
