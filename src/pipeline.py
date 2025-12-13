@@ -248,9 +248,10 @@ def run_pipeline(
                 logger.info(f"✓ Generated embeddings ({len(embedding_response.embedding)} dims)")
                 embeddings_stored = True
 
-            except HTTPError as e:
+            except Exception as e:
+                # Any embedding failure should be non-fatal; log and continue.
                 logger.warning(f"Failed to persist embeddings: {e}")
-                # Don't fail the pipeline if embeddings fail
+                embeddings_stored = False
 
         # Calculate duration
         duration_ms = _calculate_duration_ms(start_time)
