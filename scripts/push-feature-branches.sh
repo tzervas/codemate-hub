@@ -29,4 +29,4 @@ echo ""
 echo -e "${GREEN}✅ All feature branches pushed successfully!${NC}"
 echo ""
 echo "Available branches:"
-git branch -r | grep feature/task
+git branch -r | grep feature/task || echo "No feature branches found in remote (yet)"
