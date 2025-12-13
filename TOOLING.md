@@ -34,7 +34,7 @@ Generated lock file from `uv lock` command. Ensures reproducible installs across
 
 **Generate/Update:**
 ```bash
-uv lock --python python3.12
+uv lock --python python3.13
 ```
 
 ### uv sync
@@ -43,10 +43,10 @@ Synchronizes the local environment with `uv.lock` specifications.
 **Usage:**
 ```bash
 # Development environment
-uv sync --python python3.12
+uv sync --python python3.13
 
 # CI (frozen, no updates)
-uv sync --python python3.12 --frozen
+uv sync --python python3.13 --frozen
 ```
 
 ## Dependency Conflicts Resolved
@@ -69,9 +69,9 @@ uv sync --python python3.12 --frozen
 
 ## Python Version
 
-- **Target**: Python 3.12+
-- **CI**: Explicitly uses Python 3.12.x from `setup-python` action
-- **Local**: Specify with `uv` commands via `--python python3.12`
+- **Target**: Python 3.13+
+- **CI**: Explicitly uses Python 3.13.x from `setup-python` action
+- **Local**: Specify with `uv` commands via `--python python3.13`
 
 ## Dependency Installation in CI
 
@@ -95,7 +95,7 @@ Uses the same frozen lock for consistency.
 curl -LsSf https://astral.sh/uv/install.sh | sh
 
 # Sync environment
-uv sync --python python3.12
+uv sync --python python3.13
 ```
 
 ### Running Commands
@@ -104,7 +104,7 @@ uv sync --python python3.12
 uv run python src/memory_setup.py
 
 # With specific version
-uv run --python python3.12 python src/pipeline.py
+uv run --python python3.13 python src/pipeline.py
 
 # Direct execution (uses synced environment)
 python src/app.py
@@ -140,7 +140,7 @@ If `uv sync` fails:
 ```bash
 # Clear cache and retry
 rm -rf .venv
-uv sync --python python3.12
+uv sync --python python3.13
 ```
 
 ### Version Pinning
