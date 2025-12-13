@@ -16,6 +16,7 @@ Environment Variables (for future live mode):
 import json
 import logging
 import sys
+import time
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, Optional, Protocol
@@ -28,6 +29,8 @@ DEFAULT_MODEL = "qwen2.5-coder:7b-q4_0"
 DEFAULT_OLLAMA_URL = "http://ollama:11434"
 DEFAULT_CHROMA_DIR = "./chroma_db"
 HTTP_SERVICE_UNAVAILABLE = 503
+PROMPT_PREVIEW_LENGTH = 100
+MS_PER_SECOND = 1000
 
 
 # Configure logging
@@ -159,6 +162,11 @@ class MalformedFixtureClient(FixtureClient):
             return json.load(f)
 
 
+def _calculate_duration_ms(start_time: float) -> float:
+    """Calculate duration in milliseconds from start time."""
+    return (time.time() - start_time) * MS_PER_SECOND
+
+
 def run_pipeline(
     prompt: str,
     model: str = DEFAULT_MODEL,
@@ -182,8 +190,6 @@ def run_pipeline(
     Raises:
         PipelineError: For any pipeline execution failures
     """
-    import time
-
     start_time = time.time()
 
     # Default to fixture client for testing
@@ -193,7 +199,10 @@ def run_pipeline(
         logger.info("Using fixture client (testing mode)")
 
     logger.info(f"Starting pipeline with model: {model}")
-    logger.info(f"Prompt: {prompt[:100]}..." if len(prompt) > 100 else f"Prompt: {prompt}")
+    prompt_preview = (
+        f"{prompt[:PROMPT_PREVIEW_LENGTH]}..." if len(prompt) > PROMPT_PREVIEW_LENGTH else prompt
+    )
+    logger.info(f"Prompt: {prompt_preview}")
 
     try:
         # Step 1: Generate response from Ollama
@@ -228,7 +237,7 @@ def run_pipeline(
                 # Don't fail the pipeline if embeddings fail
 
         # Calculate duration
-        duration_ms = (time.time() - start_time) * 1000
+        duration_ms = _calculate_duration_ms(start_time)
 
         result = PipelineResult(
             success=True,
@@ -244,7 +253,7 @@ def run_pipeline(
     except HTTPError as e:
         # HTTP errors are logged and re-raised
         logger.error(f"HTTP error: {e}")
-        duration_ms = (time.time() - start_time) * 1000
+        duration_ms = _calculate_duration_ms(start_time)
         return PipelineResult(
             success=False,
             error=str(e),
@@ -254,7 +263,7 @@ def run_pipeline(
     except SchemaValidationError as e:
         # Schema validation errors are logged and re-raised
         logger.error(f"Schema validation error: {e}")
-        duration_ms = (time.time() - start_time) * 1000
+        duration_ms = _calculate_duration_ms(start_time)
         return PipelineResult(
             success=False,
             error=str(e),
@@ -264,7 +273,7 @@ def run_pipeline(
     except Exception as e:
         # Catch-all for unexpected errors
         logger.error(f"Unexpected pipeline error: {e}", exc_info=True)
-        duration_ms = (time.time() - start_time) * 1000
+        duration_ms = _calculate_duration_ms(start_time)
         return PipelineResult(
             success=False,
             error=f"Unexpected error: {e}",
