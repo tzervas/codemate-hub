@@ -123,11 +123,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       
-      - name: Make scripts executable
-        run: chmod +x scripts/*.sh
-      
-      - name: Run dry-run smoke test
-        run: bash scripts/test-integration.sh dry-run
+      - name: Validate docker-compose with sample env
+        run: |
+          # Create a minimal .env for validation
+          echo "PASSWORD=test" > .env
+          docker compose config > /dev/null && echo "✓ docker-compose config valid"
 
   documentation-check:
     name: Documentation
