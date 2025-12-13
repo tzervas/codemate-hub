@@ -151,6 +151,29 @@ jobs:
           python -c "import src.memory_setup; print('✓ Memory setup module valid')"
           echo "✓ Memory initialization tests passed"
 
+  pipeline-tests:
+    name: Pipeline Regression Tests
+    runs-on: ubuntu-24.04
+    needs: [python-checks]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Python toolchain
+        uses: ./.github/actions/setup-python-toolchain
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          uv-version: ${{ env.UV_VERSION }}
+      
+      - name: Install dependencies
+        run: |
+          uv pip install --system pydantic pytest
+      
+      - name: Run pipeline regression tests
+        run: |
+          python -m pytest tests/test_pipeline.py -v --tb=short
+          echo "✓ All pipeline tests passed"
+
   smoke-test:
     name: Smoke Test
     runs-on: ubuntu-24.04
@@ -186,7 +209,7 @@ jobs:
   test-results:
     name: Test Summary
     runs-on: ubuntu-24.04
-    needs: [python-checks, preflight-checks, ollama-health-check, yaml-validation, dockerfile-lint, memory-initialization, smoke-test, documentation-check]
+    needs: [python-checks, preflight-checks, ollama-health-check, yaml-validation, dockerfile-lint, memory-initialization, pipeline-tests, smoke-test, documentation-check]
     if: always()
     steps:
       - name: Check for failures
@@ -198,6 +221,7 @@ jobs:
           echo "  YAML Lint: ${{ needs.yaml-validation.result }}"
           echo "  Dockerfile: ${{ needs.dockerfile-lint.result }}"
           echo "  Memory Init: ${{ needs.memory-initialization.result }}"
+          echo "  Pipeline Tests: ${{ needs.pipeline-tests.result }}"
           echo "  Smoke Test: ${{ needs.smoke-test.result }}"
           echo "  Documentation: ${{ needs.documentation-check.result }}"
           
@@ -208,6 +232,7 @@ jobs:
              [[ "${{ needs.yaml-validation.result }}" == "failure" ]] || \
              [[ "${{ needs.dockerfile-lint.result }}" == "failure" ]] || \
              [[ "${{ needs.memory-initialization.result }}" == "failure" ]] || \
+             [[ "${{ needs.pipeline-tests.result }}" == "failure" ]] || \
              [[ "${{ needs.smoke-test.result }}" == "failure" ]] || \
              [[ "${{ needs.documentation-check.result }}" == "failure" ]]; then
             echo "❌ Some checks failed"
