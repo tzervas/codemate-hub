@@ -28,9 +28,9 @@ jobs:
         run: |
           curl -LsSf https://astral.sh/uv/install.sh | sh
           echo "$HOME/.local/bin" >> $GITHUB_PATH
-      - name: Sync dependencies with uv
+      - name: Install dependencies with uv
         run: |
-          uv sync --python python3.12 --frozen
+          uv pip install --python $(which python) -r requirements.txt
       - name: Syntax check
         run: |
           python -c "import sys; print('Python OK', sys.version)"
@@ -136,9 +136,9 @@ jobs:
           curl -LsSf https://astral.sh/uv/install.sh | sh
           echo "$HOME/.local/bin" >> $GITHUB_PATH
       
-      - name: Sync dependencies with uv
+      - name: Install dependencies with uv
         run: |
-          uv sync --python python3.12 --frozen
+          uv pip install --python $(which python) langchain-chroma langchain-community langchain ollama
       
       - name: Test memory initialization syntax
         run: |
