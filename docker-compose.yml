@@ -92,4 +92,13 @@ services:
 
 volumes:
   ollama_data:
+    # Persistent storage for Ollama model artifacts
+    # Retention: Protected models are kept indefinitely
+    # Cleanup: Use scripts/model-prune.sh to remove unused models
+    # Size management: Monitor with 'docker system df'
   chroma_db:
+    # Persistent storage for Chroma vector database
+    # Contains embedding vectors for code context and memory
+    # Retention: Preserved across container restarts
+    # Cleanup: Remove entire directory to reset embeddings
+
