@@ -139,3 +139,19 @@ Next Steps
 → Integrate pipeline with live Ollama for production use
 → Consider adding more advanced test scenarios (timeouts, retries)
 → Monitor CI/CD pipeline for any issues
+
+Code Quality Improvements (PR #5)
+----------------------------------
+Applied Sourcery AI recommendations:
+- ✅ Fixed formatting issues (trailing whitespace, unnecessary f-strings)
+- ✅ Extracted magic strings and numbers to constants
+- ✅ Removed unnecessary pass statements
+- ✅ Simplified conditional expressions
+- ✅ Reduced code duplication with helper function for duration calculation
+
+Future Refactoring Opportunities (for future branches):
+- Consider context manager for duration tracking (with statement)
+- Explore using dataclass frozen=True for immutable configs
+- Consider adding retry logic with exponential backoff (new feature)
+- Explore using Enum for HTTP status codes (more comprehensive change)
+- Consider extracting fixture file paths to constants (may reduce flexibility)
