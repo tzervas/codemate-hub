@@ -54,17 +54,112 @@ Once deployment is complete:
 
 ## Common Commands
 
+### Model Management
+
+#### List Available Models
+
+```bash
+./scripts/model-pull.sh list
+```
+
+Shows recommended models for download from Ollama Hub.
+
+#### Pull Default Models
+
+```bash
+./scripts/model-pull.sh default
+```
+
+Pulls the default models:
+- `qwen2.5-coder:7b-q4_0` - Qwen 2.5 Coder (primary, optimized for code generation)
+- `mistral:latest` - Mistral 7B (fallback, general-purpose)
+
+#### Pull a Specific Model
+
+```bash
+./scripts/model-pull.sh neural-chat:latest
+```
+
+Any valid Ollama model can be pulled. Visit https://ollama.ai/library for the full list.
+
+#### List Local Models
+
+```bash
+docker compose run --rm ollama ollama list
+```
+
+Shows all models currently cached locally.
+
+### Memory & Persistence
+
+#### Memory Database Initialization
+
+The Chroma vector database is automatically initialized on first startup. To manually verify initialization:
+
+```bash
+python src/memory_setup.py
+```
+
+This will:
+- Create the Chroma database directory (chroma_db/)
+- Initialize OllamaEmbeddings from the local Ollama service
+- Load any preseed documents from insights/domain-preseeds/
+
+#### Memory Management
+
+Memory embeddings are persisted in the `chroma_db` volume:
+- **Location in container**: `/app/chroma_db`
+- **Host mount**: `./chroma_db` (when using docker-compose)
+- **Persistence**: Survives container restarts
+
+To reset the memory database:
+
+```bash
+docker-compose down -v chroma_db
+# or manually:
+rm -rf chroma_db/
+```
+
+### Disk Usage & Model Pruning
+
+#### Check Disk Usage
+
+```bash
+docker system df
+```
+
+Shows total size of Docker images, containers, and volumes.
+
+#### List Pruneable Models
+
+```bash
+./scripts/model-prune.sh list-unused
+```
+
+Shows models that are not in the protected set and can be safely deleted.
+
+#### Preview Pruning (Dry-Run)
+
+```bash
+./scripts/model-prune.sh dry-run
+```
+
+Shows what would be deleted without making changes.
+
+#### Prune Unused Models
+
+```bash
+./scripts/model-prune.sh keep-models
+```
+
+**WARNING**: Deletes all non-protected models. Protected models (qwen2.5-coder, mistral) are never removed.
+
+To add additional models to the protected list, edit `scripts/model-prune.sh` and modify the `PROTECTED_MODELS` array.
+
 ### Check Service Health
 
 ```bash
 ./scripts/check-health.sh 120
-```
-
-### Pull Additional Models
-
-```bash
-./scripts/model-pull.sh mistral:latest
-./scripts/model-pull.sh neural-chat:latest
 ```
 
 ### View Logs
@@ -74,13 +169,13 @@ docker-compose logs -f [service]
 # Examples:
 docker-compose logs -f ollama
 docker-compose logs -f langflow
-docker-compose logs -f coding-assistant
+docker-compose logs -f app
 ```
 
 ### Run Pipeline
 
 ```bash
-docker exec coding-assistant python src/pipeline.py
+docker exec app python src/pipeline.py
 ```
 
 ### Stop Services
@@ -128,6 +223,20 @@ docker exec ollama nvidia-smi
 - Verify internet connection
 - Check available disk space (models can be 5-30 GB)
 - Try manually: `docker exec ollama ollama pull qwen2.5-coder:7b-q4_0`
+
+### Memory/Embeddings issues
+
+- Verify Chroma database exists: `ls -la chroma_db/`
+- Check if memory initialization succeeded: `python src/memory_setup.py`
+- Review logs: `docker-compose logs app`
+- Reset database: `docker-compose down -v chroma_db && docker-compose up`
+
+### High disk usage from models
+
+- List local models: `docker exec ollama ollama list`
+- Check model sizes: `du -sh ollama_data/`
+- Preview what can be deleted: `./scripts/model-prune.sh dry-run`
+- Safely prune unused models: `./scripts/model-prune.sh keep-models`
 
 ### GPU not being used
 
