@@ -1,22 +1,41 @@
 services:
   ollama:
+    # Ollama: Local LLM inference engine
+    # Provides model inference API used by app and Langflow
+    # Image: Latest stable Ollama (pinning strategy in README)
     image: ollama/ollama:latest
     container_name: ollama
     ports:
       - "11434:11434"
     volumes:
+      # Persist downloaded models across container restarts
       - ollama_data:/root/.ollama
     # Optional: uncomment next line if NVIDIA GPU available (requires nvidia-docker)
     # runtime: nvidia
     environment:
       # Uncomment if using GPU: - NVIDIA_VISIBLE_DEVICES=all
+      # Model inference parallelism (CPU tuning for quad-core)
       - OLLAMA_NUM_PARALLEL=4
+      # Thread count per model (CPU tuning for quad-core)
       - OLLAMA_NUM_THREAD=4
+      # Explicit binding address (localhost only, accessed via container network)
+      - OLLAMA_HOST=0.0.0.0:11434
+    # Healthcheck ensures Ollama is responsive before dependent services start
+    # Verifies /api/tags endpoint (lists available models)
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:11434/api/tags"]
       interval: 30s
       timeout: 10s
       retries: 3
+    # Resource limits prevent container from consuming all host resources
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 4G
+        reservations:
+          cpus: '1'
+          memory: 2G
 
   langflow:
     image: langflowai/langflow:latest
