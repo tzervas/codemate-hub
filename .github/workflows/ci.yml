@@ -148,8 +148,7 @@ jobs:
   test-results:
     name: Test Summary
     runs-on: ubuntu-latest
-    needs: [python-checks, preflight-checks, ollama-health-check, 
-            yaml-validation, dockerfile-lint, image-build, smoke-test, documentation-check]
+    needs: [python-checks, preflight-checks, ollama-health-check, yaml-validation, dockerfile-lint, image-build, smoke-test, documentation-check]
     if: always()
     steps:
       - name: Report results
