@@ -7,7 +7,7 @@ name = "giggitty-cluster"
 version = "0.2.4"
 description = "Dockerized Agentic Coding Assistant with Ollama, Langflow, and Code Server"
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.12"
 license = {text = "MIT"}
 authors = [
   {name = "Giggitty Team", email = "dev@giggitty.dev"}
