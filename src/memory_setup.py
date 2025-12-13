@@ -38,6 +38,7 @@ def initialize_memory(
         RuntimeError: If database initialization fails
     """
     # Load from environment with sensible defaults
+    # Note: In Docker, use http://ollama:11434; locally use http://localhost:11434
     db_path = db_path or os.getenv("CHROMA_DB_DIR", "./chroma_db")
     ollama_base_url = ollama_base_url or os.getenv(
         "OLLAMA_BASE_URL", "http://ollama:11434"

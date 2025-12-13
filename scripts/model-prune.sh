@@ -41,17 +41,17 @@ PROTECTED_MODELS=(
 )
 
 function list_local_models() {
-  """List all locally cached models"""
+  # List all locally cached models
   docker compose -f "$PROJECT_ROOT/docker-compose.yml" run --rm ollama ollama list
 }
 
 function get_model_names() {
-  """Extract model names from ollama list output"""
+  # Extract model names from ollama list output
   list_local_models | awk 'NR>1 {print $1}' | sed 's/:latest$//'
 }
 
 function is_protected() {
-  """Check if a model is in the protected list"""
+  # Check if a model is in the protected list
   local model=$1
   for protected in "${PROTECTED_MODELS[@]}"; do
     if [[ "$model" == "$protected" ]] || [[ "$model" == "${protected%:*}" ]]; then
@@ -62,15 +62,15 @@ function is_protected() {
 }
 
 function get_model_size() {
-  """Get approximate size of a model from ollama show command"""
+  # Get approximate size of a model from ollama show command
   local model=$1
   docker compose -f "$PROJECT_ROOT/docker-compose.yml" run --rm ollama ollama show "$model" 2>/dev/null | \
     grep -i "parameters\|size" | head -1 | awk '{print $NF}' || echo "unknown"
 }
 
 function list_unused_models() {
-  """List all models that could be pruned (non-protected)"""
-  log_info "Scanning for pruneable models..."
+  # List all models that could be pruned (non-protected)
+  log_info "Scanning for prunable models..."
   echo ""
   
   local models=()
@@ -99,7 +99,7 @@ function list_unused_models() {
 }
 
 function dry_run_prune() {
-  """Show what would be deleted without actually deleting"""
+  # Show what would be deleted without actually deleting
   log_info "Dry-run: Showing models that would be pruned..."
   echo ""
   
@@ -125,7 +125,7 @@ function dry_run_prune() {
 }
 
 function prune_models() {
-  """Actually prune non-protected models"""
+  # Actually prune non-protected models
   log_warn "Pruning models (this cannot be undone)..."
   echo ""
   
