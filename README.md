@@ -363,6 +363,16 @@ gh secret list
 
 The CI pipeline automatically uses `.env.ci` for testing. Sensitive values are injected via GitHub Secrets in the workflow.
 
+### Enforcing Signed Commits
+
+- Install the helper hook so pushes with unsigned commits are blocked locally:
+	```bash
+	cp scripts/git-hooks/pre-push-verify-signatures .git/hooks/pre-push
+	chmod +x .git/hooks/pre-push
+	```
+- The hook scans each ref being pushed and aborts if any commit lacks a valid GPG signature, mirroring GitHub vigilant mode.
+- Re-sign problematic commits with `git commit --amend --no-edit --gpg-sign` or batch-fix them via `git rebase --exec 'git commit --amend --no-edit --gpg-sign' <base>` before pushing again.
+
 ## For More Information
 
 - See `trackers/` for detailed project planning and milestones
