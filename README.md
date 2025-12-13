@@ -276,11 +276,48 @@ If ports are already in use:
 
 ### Customizing Pipeline
 
-Edit `src/pipeline.py` and run:
+The pipeline orchestrator (`src/pipeline.py`) coordinates code generation requests and manages memory persistence.
+
+#### Test Pipeline Locally
+
+```bash
+# Run in fixture mode (uses test fixtures, no Ollama required)
+python src/pipeline.py
+```
+
+This executes a test run using pre-recorded fixtures, validating:
+- Request/response handling
+- Schema validation
+- Error handling
+- Embedding generation (simulated)
+
+#### Run Pipeline in Container
 
 ```bash
 docker exec coding-assistant python src/pipeline.py
 ```
+
+#### Pipeline Testing
+
+The pipeline has comprehensive regression tests operating in fixture mode:
+
+```bash
+# Install test dependencies
+pip install pytest pydantic
+
+# Run all pipeline tests
+pytest tests/test_pipeline.py -v
+
+# Run specific test class
+pytest tests/test_pipeline.py::TestPipelineSuccess -v
+```
+
+**Test Matrix Coverage:**
+- ✅ Success scenario: HTTP 200, well-formed response, embeddings persisted
+- ✅ HTTP error scenario: Non-200 response, PipelineError raised, memory untouched
+- ✅ Malformed schema: Validation failure, memory untouched, failure logged
+
+All tests run in fixture mode without requiring live Ollama, making them fast and deterministic for CI/CD.
 
 ### Accessing Application Container
 
