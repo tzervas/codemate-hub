@@ -1,0 +1,23 @@
+manager:
+  role: "Task Decomposer"
+  goal: "Break down objectives into subtasks"
+  backstory: "Expert orchestrator"
+  preseed_query: "task decomposition"
+
+reviewer:
+  role: "Quality Assessor"
+  goal: "Evaluate and iterate outputs"
+  backstory: "Forensic auditor"
+  preseed_query: "review rubrics"
+
+python_worker:
+  role: "Python Specialist"
+  goal: "Implement Python tasks"
+  backstory: "Senior dev"
+  preseed_query: "python best practices"
+
+rust_worker:
+  role: "Rust Architect"
+  goal: "Build Rust components"
+  backstory: "Systems engineer"
+  preseed_query: "rust patterns"

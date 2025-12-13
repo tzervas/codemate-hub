@@ -1,0 +1,21 @@
+.env
+.venv/
+venv/
+env/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.DS_Store
+.vscode/
+/.venv
+chrom a_db/
+chroma_db/
+.idea/
+.coverage
+dist/
+build/
+*.egg-info/
+/.cache
