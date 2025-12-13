@@ -32,11 +32,8 @@ dev = [
   "ruff>=0.1.0",
 ]
 
-[tool.uv]
-python-version = "3.12"
-
-[tool.uv.sources]
-# Define any custom package sources if needed
+[tool.hatch.build.targets.wheel]
+packages = ["src"]
 
 [tool.black]
 line-length = 100
