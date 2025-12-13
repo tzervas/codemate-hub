@@ -116,7 +116,7 @@ jobs:
   #         push: false
   #         cache-from: type=gha
   #         cache-to: type=gha,mode=max
-  #         tags: giggitty-assistant:latest
+  #         tags: codemate-hub:latest
 
   memory-initialization:
     name: Memory Initialization Test

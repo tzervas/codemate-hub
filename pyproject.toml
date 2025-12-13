@@ -3,14 +3,17 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "giggitty-cluster"
+name = "codemate-hub"
 version = "0.2.4"
 description = "Dockerized Agentic Coding Assistant with Ollama, Langflow, and Code Server"
 readme = "README.md"
 requires-python = ">=3.12"
 license = {text = "MIT"}
 authors = [
-  {name = "Giggitty Team", email = "dev@giggitty.dev"}
+  {name = "Tyler Zervas", email = "tz-dev@vectorweight.com"}
+]
+maintainers = [
+  {name = "Vector Weight Technologies", email = "tz-dev@vectorweight.com"}
 ]
 keywords = ["llm", "agents", "docker", "ollama", "langchain", "coding-assistant"]
 classifiers = [
