@@ -23,14 +23,12 @@ from typing import Any, Dict, Optional, Protocol
 
 from pydantic import BaseModel, Field, ValidationError
 
-
-# Constants
-DEFAULT_MODEL = "qwen2.5-coder:7b-q4_0"
-DEFAULT_OLLAMA_URL = "http://ollama:11434"
-DEFAULT_CHROMA_DIR = "./chroma_db"
-HTTP_SERVICE_UNAVAILABLE = 503
-PROMPT_PREVIEW_LENGTH = 100
-MS_PER_SECOND = 1000
+from src.constants import (
+    DEFAULT_MODEL,
+    HTTP_SERVICE_UNAVAILABLE,
+    MS_PER_SECOND,
+    PROMPT_PREVIEW_LENGTH,
+)
 
 
 # Configure logging
