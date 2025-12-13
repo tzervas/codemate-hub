@@ -15,3 +15,5 @@ Acceptance Criteria
 - New developer can run `./scripts/build.sh` then `./scripts/deploy.sh` and open `code-server` to start hacking.
 
 Priority: Low
+
+Status: NOT STARTED

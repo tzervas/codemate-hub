@@ -15,3 +15,5 @@ Acceptance Criteria
 - Scripts run idempotently and fail early with clear messages.
 
 Priority: Medium
+
+Status: NOT STARTED

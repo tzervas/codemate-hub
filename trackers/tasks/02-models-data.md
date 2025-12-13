@@ -70,7 +70,7 @@ Modified:
   - `Dockerfile` (+25 lines: uv integration in multi-stage builder)
 
 Total Lines of Code Added: 4955
-Total Commits: 19
+Total Commits: 20
 Total Features: 4 new major features
 Total Build Improvements: 6 build/tooling commits
 
@@ -82,12 +82,13 @@ Dependency Management
 - 210 packages resolved with zero conflicts
 
 CI/CD Enhancements
-------------------
+-------------------
 - 8 validation jobs in GitHub Actions workflow
 - Python syntax and import checks
 - Docker Compose configuration validation
 - Dockerfile linting
 - Memory initialization validation
+- Pinned uv installer invocation to keep hosted runners on the expected toolchain
 - Comprehensive error reporting
 
 Development Environment
@@ -121,3 +122,7 @@ Next Steps
 → Monitor PR #3 CI completion status
 → Merge to main when all checks pass
 → Release version 0.3.0
+
+Progress Log
+------------
+- 2025-12-13: Finalized uv installation flow in CI (`ci: pin uv installer invocation`).
