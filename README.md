@@ -191,8 +191,33 @@ This will delete stored data (models, embeddings, database). To preserve data, u
 docker-compose down
 ```
 
+## GitHub Actions CI/CD & Secrets
+
+### Setting Up GitHub Secrets
+
+For production deployments and CI/CD pipeline, sensitive values should be stored as GitHub Secrets:
+
+```bash
+# Set API keys as secrets (requires gh CLI)
+gh secret set CODESERVER_PASSWORD -b "your-secure-password"
+gh secret set OPENAI_API_KEY -b "sk-your-openai-key"
+gh secret set ANTHROPIC_API_KEY -b "your-anthropic-key"
+
+# View all secrets
+gh secret list
+```
+
+### CI Environment Files
+
+- `.env.example` - Template for local development (safe to commit)
+- `.env.ci` - CI/CD environment (safe to commit, test values only)
+- `.env` - Local development (add to .gitignore, create from .env.example)
+
+The CI pipeline automatically uses `.env.ci` for testing. Sensitive values are injected via GitHub Secrets in the workflow.
+
 ## For More Information
 
 - See `trackers/` for detailed project planning and milestones
 - See `SPEC.md` for technical specifications
 - See `OVERVIEW.md` for architecture overview
+
