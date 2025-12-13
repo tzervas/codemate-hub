@@ -271,7 +271,9 @@ def _strip_header(changelog_text: str) -> str:
 
 
 def _existing_snapshot_dates(history: str) -> List[str]:
-    pattern = re.compile(r"^## Snapshot (\d{4}-\d{2}-\d{2})$")
+    # Build regex from SNAPSHOT_PREFIX constant to stay aligned
+    escaped_prefix = re.escape(SNAPSHOT_PREFIX.strip())
+    pattern = re.compile(rf"^{escaped_prefix}(\d{{4}}-\d{{2}}-\d{{2}})$")
     dates: List[str] = []
     for line in history.splitlines():
         match = pattern.match(line.strip())
@@ -418,6 +420,8 @@ def _git_commits_since(since_date: Optional[str]) -> List[CommitInfo]:
         "--pretty=format:%h|%s|%an",
         "--no-merges",
     ]
+    # Security: cmd is constructed from internal constants only (since_date from internal logic).
+    # No user input flows into the command. Using list form prevents shell injection.
     try:
         output = subprocess.check_output(cmd, cwd=ROOT, text=True, stderr=subprocess.DEVNULL)
     except Exception:
@@ -484,6 +488,7 @@ def _get_merge_prs_since(since_date: Optional[str]) -> List[Tuple[int, str]]:
         "--merges",
         "--pretty=format:%s",
     ]
+    # Security: cmd constructed from internal constants only. No external input.
     try:
         output = subprocess.check_output(cmd, cwd=ROOT, text=True, stderr=subprocess.DEVNULL)
     except Exception:

@@ -3,10 +3,17 @@ Pipeline Orchestration for Coding Assistant
 
 This module provides the core pipeline orchestration for the coding assistant,
 including fixture-based testing support for CI/CD validation without live Ollama inference.
-    
-    Returns:
-        PipelineResult capturing success or failure details
-    """
+
+The pipeline operates in two modes:
+1. Fixture mode (testing): Uses pre-recorded JSON responses for deterministic tests
+2. Live mode (production): Makes real API calls to Ollama
+
+Environment Variables (for future live mode):
+  OLLAMA_BASE_URL: Ollama API endpoint (default: http://ollama:11434)
+  CHROMA_DB_DIR: Path to persistent Chroma database (default: ./chroma_db)
+"""
+
+import json
 import logging
 import sys
 import time
@@ -24,8 +31,21 @@ from src.constants import (
 )
 
 
+# Module logger - configuration should be done by the application, not the library
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
+
+
+def _configure_logging() -> None:
+    """Configure logging for standalone execution.
+
+    This should only be called from the CLI/entrypoint, not when imported as a library.
+    """
+    logging.basicConfig(
+        level=logging.INFO,
+        format="[%(asctime)s] %(levelname)s - %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S",
+    )
 
 
 # Exception classes
@@ -158,6 +178,7 @@ def run_pipeline(
     model: str = DEFAULT_MODEL,
     client: Optional[OllamaClient] = None,
     persist_embeddings: bool = False,
+    fixtures_dir: Optional[Path] = None,
 ) -> PipelineResult:
     """
     Run the coding assistant pipeline.
@@ -167,25 +188,17 @@ def run_pipeline(
         model: Model name to use
         client: Optional client for dependency injection (defaults to fixture client)
         persist_embeddings: Whether to persist embeddings to Chroma
-<<<<<<< HEAD
-        memory_dir: Directory for memory persistence (uses CHROMA_DB_DIR if None)
+        fixtures_dir: Directory containing test fixtures (for fixture client fallback)
 
-    Returns:
-        PipelineResult with success status and details
-
-    Raises:
-        PipelineError: For any pipeline execution failures
-=======
-        
     Returns:
         PipelineResult capturing success or failure details
->>>>>>> refs/rewritten/origin-copilot-review-subtasks-feature-branch
     """
     start_time = time.time()
 
     # Default to fixture client for testing
     if client is None:
-        fixtures_dir = Path(__file__).parent.parent / "tests" / "fixtures"
+        if fixtures_dir is None:
+            fixtures_dir = Path(__file__).parent.parent / "tests" / "fixtures"
         client = FixtureClient(fixtures_dir)
         logger.info("Using fixture client (testing mode)")
 
@@ -277,11 +290,8 @@ if __name__ == "__main__":
     Standalone execution for testing.
     Usage: python src/pipeline.py
     """
-    logging.basicConfig(
-        level=logging.INFO,
-        format="[%(asctime)s] %(levelname)s - %(message)s",
-        datefmt="%Y-%m-%d %H:%M:%S",
-    )
+    # Configure logging only for CLI execution
+    _configure_logging()
     print("=" * 60)
     print("Pipeline Test Run (Fixture Mode)")
     print("=" * 60)
