@@ -16,3 +16,5 @@ Acceptance Criteria
 - Smoke tests run and return pass/fail succinctly.
 
 Priority: Medium
+
+Status: NOT STARTED

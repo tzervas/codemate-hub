@@ -16,3 +16,11 @@ Acceptance Criteria
 - Errors are surfaced with actionable messages.
 
 Priority: High
+
+Status: IN PROGRESS
+Start Date: 2025-12-13
+Active Branch: feature/task-03-application
+
+Progress Log
+------------
+- 2025-12-13: Created feature branch `feature/task-03-application` to begin Task 03 subtasks.
