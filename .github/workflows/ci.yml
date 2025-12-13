@@ -40,7 +40,7 @@ jobs:
           uv run python -c "import compileall, sys; sys.exit(0 if compileall.compile_dir('src', quiet=1) else 1)" || echo "⚠ Some files not compilable (expected for stubs)"
       - name: Verify changelog is current
         run: |
-          uv run python scripts/generate_changelog.py --check
+          uv run python tools/chngbrgr.py --check
 
   preflight-checks:
     name: Infrastructure Preflight

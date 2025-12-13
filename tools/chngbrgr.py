@@ -2,13 +2,13 @@
 """chngbrgr - Generate CHANGELOG.md from tracker documents with git/PR enrichment.
 
 This script provides the CLI interface to the modular changelog generation system.
-All core functionality is in the scripts/chngbrgr/ package.
+All core functionality is in the tools/chngbrgr/ package.
 
 Usage:
-    python scripts/chngbrgr.py           # Update CHANGELOG.md
-    python scripts/chngbrgr.py --check   # Check if up-to-date
-    python scripts/chngbrgr.py --preview # Print without writing
-    python scripts/chngbrgr.py --help    # Show all options
+    python tools/chngbrgr.py           # Update CHANGELOG.md
+    python tools/chngbrgr.py --check   # Check if up-to-date
+    python tools/chngbrgr.py --preview # Print without writing
+    python tools/chngbrgr.py --help    # Show all options
 """
 
 from __future__ import annotations
@@ -17,8 +17,9 @@ import argparse
 import sys
 from typing import List, Optional
 
-from scripts.chngbrgr.config import CHANGELOG_PATH
-from scripts.chngbrgr.render import render_changelog
+from tools.chngbrgr.config import CHANGELOG_PATH
+from tools.chngbrgr.git import validate_date_format
+from tools.chngbrgr.render import render_changelog
 
 
 def main(argv: Optional[List[str]] = None) -> int:
@@ -41,6 +42,14 @@ def main(argv: Optional[List[str]] = None) -> int:
     parser.add_argument("--preview", action="store_true", help="Print to stdout instead of writing file")
     args = parser.parse_args(argv)
 
+    # Validate date arguments early to provide clear error messages
+    try:
+        validate_date_format(args.date)
+        validate_date_format(args.since)
+    except ValueError as e:
+        print(f"Error: {e}", file=sys.stderr)
+        return 1
+
     changelog_content = render_changelog(
         date_override=args.date,
         include_git=not args.no_git,
@@ -54,11 +63,11 @@ def main(argv: Optional[List[str]] = None) -> int:
 
     if args.check:
         if not CHANGELOG_PATH.exists():
-            print("CHANGELOG.md is missing. Run scripts/chngbrgr.py to create it.", file=sys.stderr)
+            print("CHANGELOG.md is missing. Run tools/chngbrgr.py to create it.", file=sys.stderr)
             return 1
         existing = CHANGELOG_PATH.read_text(encoding="utf-8")
         if existing != changelog_content:
-            print("CHANGELOG.md is out of date. Run scripts/chngbrgr.py to refresh.", file=sys.stderr)
+            print("CHANGELOG.md is out of date. Run tools/chngbrgr.py to refresh.", file=sys.stderr)
             return 1
         return 0
 

@@ -10,11 +10,12 @@ This module handles:
 
 from __future__ import annotations
 
+import datetime as _dt
 import re
 import subprocess
 from typing import List, Optional, Tuple
 
-from scripts.chngbrgr.config import (
+from tools.chngbrgr.config import (
     AI_AGENT_PATTERNS,
     BOT_PATTERNS,
     CHANGE_TYPE_PREFIXES,
@@ -26,7 +27,35 @@ from scripts.chngbrgr.config import (
     PATH_BUCKETS,
     ROOT,
 )
-from scripts.chngbrgr.models import CommitInfo
+from tools.chngbrgr.models import CommitInfo
+
+
+def validate_date_format(date_str: Optional[str]) -> Optional[str]:
+    """Validate and normalize date string to YYYY-MM-DD format.
+
+    Args:
+        date_str: Date string to validate
+
+    Returns:
+        Validated date string in YYYY-MM-DD format, or None if invalid/empty
+
+    Raises:
+        ValueError: If date_str is not in valid YYYY-MM-DD format
+    """
+    if not date_str:
+        return None
+
+    # Strict regex validation for YYYY-MM-DD format
+    if not re.match(r"^\d{4}-\d{2}-\d{2}$", date_str):
+        raise ValueError(f"Invalid date format: {date_str!r}. Expected YYYY-MM-DD.")
+
+    # Validate it's a real date
+    try:
+        _dt.datetime.strptime(date_str, "%Y-%m-%d")
+    except ValueError as e:
+        raise ValueError(f"Invalid date: {date_str!r}. {e}") from e
+
+    return date_str
 
 
 def classify_contributor_type(author: str, subject: str) -> str:
@@ -172,19 +201,23 @@ def get_commits_since(since_date: Optional[str]) -> List[CommitInfo]:
 
     Returns:
         List of CommitInfo objects for non-merge commits since the date
+
+    Raises:
+        ValueError: If since_date is not in valid YYYY-MM-DD format
     """
-    if not since_date:
+    validated_date = validate_date_format(since_date)
+    if not validated_date:
         return []
 
     cmd = [
         "git",
         "log",
-        f"--since={since_date}T00:00:00",
+        f"--since={validated_date}T00:00:00",
         "--pretty=format:%h|%s|%an",
         "--no-merges",
     ]
-    # Security: cmd is constructed from internal constants only (since_date from internal logic).
-    # No user input flows into the command. Using list form prevents shell injection.
+    # Security: since_date is validated via validate_date_format() to ensure YYYY-MM-DD format.
+    # Using list form prevents shell injection.
     try:
         output = subprocess.check_output(cmd, cwd=ROOT, text=True, stderr=subprocess.DEVNULL)  # nosec B603
     except Exception:
@@ -254,18 +287,22 @@ def get_merge_prs_since(since_date: Optional[str]) -> List[Tuple[int, str]]:
 
     Returns:
         List of (pr_number, title) tuples
+
+    Raises:
+        ValueError: If since_date is not in valid YYYY-MM-DD format
     """
-    if not since_date:
+    validated_date = validate_date_format(since_date)
+    if not validated_date:
         return []
 
     cmd = [
         "git",
         "log",
-        f"--since={since_date}T00:00:00",
+        f"--since={validated_date}T00:00:00",
         "--merges",
         "--pretty=format:%s",
     ]
-    # Security: cmd constructed from internal constants only. No external input.
+    # Security: since_date is validated via validate_date_format() to ensure YYYY-MM-DD format.
     try:
         output = subprocess.check_output(cmd, cwd=ROOT, text=True, stderr=subprocess.DEVNULL)  # nosec B603
     except Exception:
