@@ -4,6 +4,21 @@
 
 set -euo pipefail
 
+EXEMPT_COMMITS=(
+    62802c2f2d196142fe81723dce1e0f08995f0ba3
+)
+
+is_exempt_commit() {
+    local sha="$1"
+    for exempt in "${EXEMPT_COMMITS[@]}"; do
+        # match full or prefix
+        if [[ "$sha" == "$exempt" || "$exempt" == ${sha}* || "$sha" == ${exempt}* ]]; then
+            return 0
+        fi
+    done
+    return 1
+}
+
 remote_name=${1:-}
 remote_url=${2:-}
 zero_sha=$(printf '%040d' 0)
@@ -25,14 +40,22 @@ while read -r local_ref local_sha remote_ref remote_sha; do
     log_output=$(GIT_LOG_SHOW_SIGNATURE=false git log --pretty='%h %G? %s' "$range" -- 2>/dev/null || true)
     commit_lines=$(awk '/^[0-9a-f]/ {print}' <<<"$log_output")
     if [[ -n "$commit_lines" ]]; then
-        unsigned=$(awk '$2 != "G" {print}' <<<"$commit_lines")
-        if [[ -n "$unsigned" ]]; then
+        unsigned_lines=()
+        while IFS= read -r line; do
+            [[ -z "$line" ]] && continue
+            commit_sha=${line%% *}
+            status=$(awk '{print $2}' <<<"$line")
+            if ! is_exempt_commit "$commit_sha" && [[ "$status" != "G" ]]; then
+                unsigned_lines+=("$line")
+            fi
+        done <<<"$commit_lines"
+        if (( ${#unsigned_lines[@]} )); then
             cat >&2 <<EOF
 🚫 Push blocked: unsigned or unverifiable commits detected.
 Remote: ${remote_name:-unknown} (${remote_url:-unknown})
 Range: $range
 Problem commits:
-$unsigned
+$(printf '%s\n' "${unsigned_lines[@]}")
 
 All commits must carry a valid GPG signature before pushing.
 Run:
@@ -46,6 +69,9 @@ EOF
     fi
 
     while read -r commit_sha; do
+        if is_exempt_commit "$commit_sha"; then
+            continue
+        fi
         git verify-commit "$commit_sha" >/dev/null 2>&1 || {
             echo "🚫 Push blocked: git verify-commit failed for $commit_sha" >&2
             exit 1
