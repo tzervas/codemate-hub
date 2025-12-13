@@ -17,7 +17,9 @@ echo "=== Starting Ollama Service ==="
 docker compose -f "$PROJECT_ROOT/docker-compose.yml" up -d ollama
 
 echo "Waiting for Ollama to be healthy..."
-"$SCRIPT_DIR/check-health.sh" 120 ollama || true
+if ! "$SCRIPT_DIR/check-health.sh" 120 ollama; then
+    echo "⚠ Ollama health check failed; attempting model pull anyway" >&2
+fi
 
 echo ""
 echo "=== Pulling Model ==="

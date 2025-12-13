@@ -13,7 +13,7 @@ This guide covers common issues and solutions when running the Dockerized Agenti
 2. Verify installation: `docker --version`
 3. Ensure Docker daemon is running
 
-**Linux Only**: Add your user to docker group (optional):
+**Linux Only**: Add your user to the docker group (optional):
 ```bash
 sudo usermod -aG docker $USER
 # Log out and log back in
@@ -111,7 +111,7 @@ cp .env.example .env
        - "11435:11434"  # Changed from 11434
    ```
 
-4. **Option C: Use different docker compose file**:
+4. **Option C: Use a different Docker Compose file**:
    ```bash
    docker compose -f docker-compose.alt.yml up
    ```

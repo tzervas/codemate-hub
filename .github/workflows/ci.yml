@@ -31,7 +31,7 @@ jobs:
       - name: Syntax check
         run: |
           python -c "import sys; print('Python OK', sys.version)"
-          python -m py_compile src/*.py 2>/dev/null || echo "⚠ Some files not compilable (expected for stubs)"
+          python -c "import compileall, sys; sys.exit(0 if compileall.compile_dir('src', quiet=1) else 1)" || echo "⚠ Some files not compilable (expected for stubs)"
 
   preflight-checks:
     name: Infrastructure Preflight
@@ -172,7 +172,8 @@ jobs:
           needs.yaml-validation.result == 'failure' ||
           needs.dockerfile-lint.result == 'failure' ||
           needs.image-build.result == 'failure' ||
-          needs.smoke-test.result == 'failure'
+          needs.smoke-test.result == 'failure' ||
+          needs.documentation-check.result == 'failure'
         run: |
           echo "❌ Some checks failed. See above for details."
           exit 1

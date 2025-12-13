@@ -97,7 +97,7 @@ docker-compose down
 
 ## GPU Support
 
-If you have NVIDIA GPU and nvidia-docker installed:
+If you have an NVIDIA GPU and nvidia-docker installed:
 
 1. Uncomment `runtime: nvidia` in `docker-compose.yml` (ollama service)
 2. Uncomment the `NVIDIA_VISIBLE_DEVICES` environment variable
