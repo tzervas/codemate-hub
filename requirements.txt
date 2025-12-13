@@ -1,7 +1,7 @@
 crewai==0.51.1
 langgraph==0.2.5
 langchain==0.2.16
-langchain-community==0.2.16
+langchain-community==0.3.27
 langchain-chroma==0.1.4
 ollama==0.3.3
 sentence-transformers==3.2.1
