@@ -413,7 +413,7 @@ def _git_commits_since(since_date: Optional[str]) -> List[CommitInfo]:
     # Security: cmd is constructed from internal constants only (since_date from internal logic).
     # No user input flows into the command. Using list form prevents shell injection.
     try:
-        output = subprocess.check_output(cmd, cwd=ROOT, text=True, stderr=subprocess.DEVNULL)
+        output = subprocess.check_output(cmd, cwd=ROOT, text=True, stderr=subprocess.DEVNULL)  # nosec B603
     except Exception:
         return []
 
@@ -480,7 +480,7 @@ def _get_merge_prs_since(since_date: Optional[str]) -> List[Tuple[int, str]]:
     ]
     # Security: cmd constructed from internal constants only. No external input.
     try:
-        output = subprocess.check_output(cmd, cwd=ROOT, text=True, stderr=subprocess.DEVNULL)
+        output = subprocess.check_output(cmd, cwd=ROOT, text=True, stderr=subprocess.DEVNULL)  # nosec B603
     except Exception:
         return []
 
