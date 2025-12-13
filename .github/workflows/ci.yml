@@ -17,7 +17,7 @@ on:
       - '.github/workflows/ci.yml'
       - 'src/**'
   pull_request:
-    branches: [ main, master ]
+    branches: [ '**' ]
   workflow_dispatch:
 
 jobs:
@@ -31,16 +31,16 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           uv-version: ${{ env.UV_VERSION }}
-      - name: Install dependencies with uv
+      - name: Sync dependencies with uv
         run: |
-          uv pip install --system -r requirements.txt
+          uv sync --python ${{ env.PYTHON_VERSION }} --extra dev
       - name: Syntax check
         run: |
-          python -c "import sys; print('Python OK', sys.version)"
-          python -c "import compileall, sys; sys.exit(0 if compileall.compile_dir('src', quiet=1) else 1)" || echo "⚠ Some files not compilable (expected for stubs)"
+          uv run python -c "import sys; print('Python OK', sys.version)"
+          uv run python -c "import compileall, sys; sys.exit(0 if compileall.compile_dir('src', quiet=1) else 1)" || echo "⚠ Some files not compilable (expected for stubs)"
       - name: Verify changelog is current
         run: |
-          python scripts/generate_changelog.py --check
+          uv run python scripts/generate_changelog.py --check
 
   preflight-checks:
     name: Infrastructure Preflight
@@ -138,17 +138,17 @@ jobs:
           python-version: ${{ env.PYTHON_VERSION }}
           uv-version: ${{ env.UV_VERSION }}
       
-      - name: Install dependencies with uv
+      - name: Sync dependencies with uv
         run: |
-          uv pip install --system langchain-chroma langchain-community langchain ollama
+          uv sync --python ${{ env.PYTHON_VERSION }}
       
       - name: Test memory initialization syntax
         run: |
-          python -c "from src.memory_setup import initialize_memory, load_preseeds; print('✓ Memory module imports successfully')"
+          uv run python -c "from src.memory_setup import initialize_memory, load_preseeds; print('✓ Memory module imports successfully')"
       
       - name: Test memory_setup.py can run
         run: |
-          python -c "import src.memory_setup; print('✓ Memory setup module valid')"
+          uv run python -c "import src.memory_setup; print('✓ Memory setup module valid')"
           echo "✓ Memory initialization tests passed"
 
   pipeline-tests:
@@ -165,13 +165,13 @@ jobs:
           python-version: ${{ env.PYTHON_VERSION }}
           uv-version: ${{ env.UV_VERSION }}
       
-      - name: Install dependencies
+      - name: Sync dependencies with uv (tests)
         run: |
-          uv pip install --system pydantic pytest
+          uv sync --python ${{ env.PYTHON_VERSION }} --extra dev
       
       - name: Run pipeline regression tests
         run: |
-          python -m pytest tests/test_pipeline.py -v --tb=short
+          uv run python -m pytest tests/test_pipeline.py -v --tb=short
           echo "✓ All pipeline tests passed"
 
   smoke-test:
