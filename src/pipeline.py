@@ -23,13 +23,8 @@ from typing import Any, Dict, Optional, Protocol
 from pydantic import BaseModel, Field, ValidationError
 
 
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format="[%(asctime)s] %(levelname)s - %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S",
-)
 logger = logging.getLogger(__name__)
+logger.addHandler(logging.NullHandler())
 
 
 # Exception classes
@@ -153,7 +148,6 @@ def run_pipeline(
     model: str = "qwen2.5-coder:7b-q4_0",
     client: Optional[OllamaClient] = None,
     persist_embeddings: bool = False,
-    memory_dir: Optional[str] = None,
 ) -> PipelineResult:
     """
     Run the coding assistant pipeline.
@@ -163,13 +157,9 @@ def run_pipeline(
         model: Model name to use
         client: Optional client for dependency injection (defaults to fixture client)
         persist_embeddings: Whether to persist embeddings to Chroma
-        memory_dir: Directory for memory persistence (uses CHROMA_DB_DIR if None)
         
     Returns:
-        PipelineResult with success status and details
-        
-    Raises:
-        PipelineError: For any pipeline execution failures
+        PipelineResult capturing success or failure details
     """
     import time
     start_time = time.time()
@@ -211,7 +201,7 @@ def run_pipeline(
                 logger.info(f"✓ Generated embeddings ({len(embedding_response.embedding)} dims)")
                 embeddings_stored = True
                 
-            except Exception as e:
+            except HTTPError as e:
                 logger.warning(f"Failed to persist embeddings: {e}")
                 # Don't fail the pipeline if embeddings fail
         
@@ -265,6 +255,11 @@ if __name__ == "__main__":
     Standalone execution for testing.
     Usage: python src/pipeline.py
     """
+    logging.basicConfig(
+        level=logging.INFO,
+        format="[%(asctime)s] %(levelname)s - %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S",
+    )
     print("=" * 60)
     print("Pipeline Test Run (Fixture Mode)")
     print("=" * 60)

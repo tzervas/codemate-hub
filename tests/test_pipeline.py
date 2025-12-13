@@ -47,6 +47,17 @@ def malformed_client(fixtures_dir):
     return MalformedFixtureClient(fixtures_dir)
 
 
+@pytest.fixture
+def embedding_failure_client(fixtures_dir):
+    """Client that raises when embedding is requested."""
+
+    class _EmbeddingFailureClient(FixtureClient):
+        def embed(self, text: str, model: str) -> dict:
+            raise HTTPError(503, "Embeddings unavailable for test")
+
+    return _EmbeddingFailureClient(fixtures_dir)
+
+
 class TestPipelineSuccess:
     """Test successful pipeline execution."""
     
@@ -76,6 +87,18 @@ class TestPipelineSuccess:
         assert result.success is True
         assert result.response is not None
         assert result.embeddings_stored is True
+        assert result.error is None
+
+    def test_embedding_failure_does_not_fail_pipeline(self, embedding_failure_client):
+        """Pipeline should remain successful if embeddings fail via HTTPError."""
+        result = run_pipeline(
+            "Write a hello world function",
+            client=embedding_failure_client,
+            persist_embeddings=True,
+        )
+
+        assert result.success is True
+        assert result.embeddings_stored is False
         assert result.error is None
     
     def test_response_content(self, fixture_client):
@@ -162,6 +185,8 @@ class TestPipelineMalformedSchema:
         
         assert result.error is not None
         assert len(result.error) > 0
+        assert result.duration_ms is not None
+        assert result.duration_ms > 0
 
 
 class TestPipelineFixtures:
@@ -217,6 +242,24 @@ class TestPipelineFixtures:
         assert isinstance(data["embedding"], list)
         assert len(data["embedding"]) > 0
         assert all(isinstance(x, (int, float)) for x in data["embedding"])
+
+    def test_generate_missing_fixture_raises_http_error(self, tmp_path):
+        """FixtureClient.generate should raise HTTPError when fixtures are missing."""
+        client = FixtureClient(tmp_path)
+
+        with pytest.raises(HTTPError) as exc_info:
+            client.generate("Write a function", "qwen2.5-coder:7b-q4_0")
+
+        assert exc_info.value.status_code == 503
+
+    def test_embed_missing_fixture_raises_http_error(self, tmp_path):
+        """FixtureClient.embed should raise HTTPError when fixtures are missing."""
+        client = FixtureClient(tmp_path)
+
+        with pytest.raises(HTTPError) as exc_info:
+            client.embed("Write a function", "qwen2.5-coder:7b-q4_0")
+
+        assert exc_info.value.status_code == 503
 
 
 class TestPipelineDefaultBehavior:
