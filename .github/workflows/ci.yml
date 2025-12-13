@@ -153,29 +153,26 @@ jobs:
     needs: [python-checks, preflight-checks, ollama-health-check, yaml-validation, dockerfile-lint, smoke-test, documentation-check]
     if: always()
     steps:
-      - name: Report results
-        run: |
-          echo "## Infrastructure CI Results" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "| Check | Result |" >> $GITHUB_STEP_SUMMARY
-          echo "|-------|--------|" >> $GITHUB_STEP_SUMMARY
-          echo "| Python Checks | ${{ needs.python-checks.result }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Preflight | ${{ needs.preflight-checks.result }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Ollama Health | ${{ needs.ollama-health-check.result }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| YAML Lint | ${{ needs.yaml-validation.result }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Dockerfile | ${{ needs.dockerfile-lint.result }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Smoke Test | ${{ needs.smoke-test.result }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Documentation | ${{ needs.documentation-check.result }} |" >> $GITHUB_STEP_SUMMARY
-      
       - name: Check for failures
-        if: |
-          needs.python-checks.result == 'failure' ||
-          needs.preflight-checks.result == 'failure' ||
-          needs.ollama-health-check.result == 'failure' ||
-          needs.yaml-validation.result == 'failure' ||
-          needs.dockerfile-lint.result == 'failure' ||
-          needs.smoke-test.result == 'failure' ||
-          needs.documentation-check.result == 'failure'
         run: |
-          echo "❌ Some checks failed. See above for details."
-          exit 1
+          echo "CI Results Summary:"
+          echo "  Python Checks: ${{ needs.python-checks.result }}"
+          echo "  Preflight: ${{ needs.preflight-checks.result }}"
+          echo "  Ollama Health: ${{ needs.ollama-health-check.result }}"
+          echo "  YAML Lint: ${{ needs.yaml-validation.result }}"
+          echo "  Dockerfile: ${{ needs.dockerfile-lint.result }}"
+          echo "  Smoke Test: ${{ needs.smoke-test.result }}"
+          echo "  Documentation: ${{ needs.documentation-check.result }}"
+          
+          # Exit with failure if any job failed
+          if [[ "${{ needs.python-checks.result }}" == "failure" ]] || \
+             [[ "${{ needs.preflight-checks.result }}" == "failure" ]] || \
+             [[ "${{ needs.ollama-health-check.result }}" == "failure" ]] || \
+             [[ "${{ needs.yaml-validation.result }}" == "failure" ]] || \
+             [[ "${{ needs.dockerfile-lint.result }}" == "failure" ]] || \
+             [[ "${{ needs.smoke-test.result }}" == "failure" ]] || \
+             [[ "${{ needs.documentation-check.result }}" == "failure" ]]; then
+            echo "❌ Some checks failed"
+            exit 1
+          fi
+          echo "✓ All checks passed"
