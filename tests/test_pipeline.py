@@ -73,6 +73,35 @@ def malformed_embedding_client(fixtures_dir):
     return _MalformedEmbeddingClient(fixtures_dir)
 
 
+@pytest.fixture
+def generic_exception_client(fixtures_dir):
+    """Client that raises a generic Exception during generate.
+    
+    Used to test the catch-all Exception handler in run_pipeline.
+    """
+
+    class _GenericExceptionClient(FixtureClient):
+        def generate(self, prompt: str, model: str) -> dict:
+            raise RuntimeError("Unexpected internal error")
+
+    return _GenericExceptionClient(fixtures_dir)
+
+
+@pytest.fixture
+def non_http_embedding_failure_client(fixtures_dir):
+    """Client that raises a generic Exception when embedding is requested.
+    
+    Used to verify that non-HTTP embedding failures fail the pipeline
+    and surface an 'Unexpected error:' message.
+    """
+
+    class _NonHTTPEmbeddingFailureClient(FixtureClient):
+        def embed(self, text: str, model: str) -> dict:
+            raise RuntimeError("Embedding service crashed")
+
+    return _NonHTTPEmbeddingFailureClient(fixtures_dir)
+
+
 class TestPipelineSuccess:
     """Test successful pipeline execution."""
     
@@ -215,6 +244,50 @@ class TestPipelineMalformedSchema:
         assert len(result.error) > 0
         assert result.duration_ms is not None
         assert result.duration_ms > 0
+
+
+class TestPipelineGenericException:
+    """Test pipeline handling of generic (non-HTTP) exceptions."""
+
+    def test_generic_exception_returns_failure(self, generic_exception_client):
+        """Test that generic exceptions result in failure with 'Unexpected error:' message."""
+        result = run_pipeline(
+            "Write a function",
+            client=generic_exception_client,
+        )
+
+        assert result.success is False
+        assert result.response is None
+        assert result.error is not None
+        assert "Unexpected error:" in result.error
+        assert "Unexpected internal error" in result.error
+
+    def test_generic_exception_duration_tracked(self, generic_exception_client):
+        """Test that duration is tracked even on generic exception."""
+        result = run_pipeline(
+            "Write a function",
+            client=generic_exception_client,
+        )
+
+        assert result.duration_ms is not None
+        assert result.duration_ms > 0
+
+    def test_non_http_embedding_failure_does_not_fail_pipeline(self, non_http_embedding_failure_client):
+        """Non-HTTP embedding failures should NOT fail the pipeline.
+        
+        Embeddings are optional - any failure during embedding (HTTP or otherwise)
+        should be logged but not cause the pipeline to fail.
+        """
+        result = run_pipeline(
+            "Write a hello world function",
+            client=non_http_embedding_failure_client,
+            persist_embeddings=True,
+        )
+
+        # All embedding failures are caught and don't fail the pipeline
+        assert result.success is True
+        assert result.embeddings_stored is False
+        assert result.error is None
 
 
 class TestPipelineFixtures:
