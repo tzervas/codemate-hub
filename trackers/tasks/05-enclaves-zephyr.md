@@ -15,3 +15,5 @@ Acceptance Criteria
 - Enclave example runs and demonstrates isolation (e.g., filesystem or process restrictions).
 
 Priority: Medium
+
+Status: NOT STARTED

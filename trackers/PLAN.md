@@ -4,8 +4,8 @@ Milestones
 ----------
 1. Discovery & baseline (this checkpoint): repo review, trackers created, decomposition finished. (Done)
 2. Infrastructure: make `docker-compose` robust, healthchecks, and GPU compatibility checks. (1-2 days)
-3. Models & Data: configure Ollama models, Chroma persistence, and memory initialization. (2-3 days)
-4. Application & Pipeline: test `src/pipeline.py`, add CI for pipeline runs. (2-3 days)
+3. Models & Data: configure Ollama models, Chroma persistence, and memory initialization. (2-3 days, Done)
+4. Application & Pipeline: test `src/pipeline.py`, add CI for pipeline runs. (2-3 days, In Progress)
 5. Langflow flows: create reproducible flows for common tasks and store in `langflow_data`. (2 days)
 6. Enclaves: test `zephyr` enclaves and integrate with `app`. (2-4 days)
 7. Dev UX & automation: polish `code-server` workspace, docs, scripts, deployment automation. (1-2 days)
@@ -38,3 +38,4 @@ Dependencies & assumptions
 Next steps
 ----------
 - Run the acceptance smoke tests and iterate on any failing items.
+- Execute Task 03 work on branch `feature/task-03-application` and update trackers after each subtask.
