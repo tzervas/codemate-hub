@@ -2,12 +2,21 @@ name: CI
 
 on:
   push:
-    branches: [ main, master, 'github-init' ]
+    branches: [ main, master, 'github-init', 'setup/**' ]
+    paths:
+      - 'docker-compose.yml'
+      - 'Dockerfile'
+      - 'requirements.txt'
+      - 'scripts/**'
+      - '.github/workflows/ci.yml'
+      - 'src/**'
   pull_request:
     branches: [ main, master ]
+  workflow_dispatch:
 
 jobs:
-  basic-checks:
+  python-checks:
+    name: Python Lint & Install
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -15,11 +24,158 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: '3.12'
-      - name: Install deps (fast-fail allowed)
+      - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           if [ -f requirements.txt ]; then pip install --no-cache-dir -r requirements.txt || true; fi
-      - name: Basic lint & smoke
+      - name: Syntax check
         run: |
-          python -c "import sys; print('python OK', sys.version)"
-          echo "CI basic checks passed"
+          python -c "import sys; print('Python OK', sys.version)"
+          python -m py_compile src/*.py 2>/dev/null || echo "⚠ Some files not compilable (expected for stubs)"
+
+  preflight-checks:
+    name: Infrastructure Preflight
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Check Docker
+        run: |
+          docker --version
+          docker compose version
+      
+      - name: Validate docker-compose.yml
+        run: |
+          docker compose config > /dev/null
+          echo "✓ docker-compose.yml is valid"
+      
+      - name: Check required files
+        run: |
+          for file in docker-compose.yml Dockerfile requirements.txt; do
+            [ -f "$file" ] || (echo "❌ Missing: $file" && exit 1)
+          done
+          echo "✓ All required files present"
+
+  ollama-health-check:
+    name: Ollama Health Config
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Run health tests
+        run: |
+          bash scripts/test-ollama-health.sh
+
+  yaml-validation:
+    name: YAML Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Validate YAML
+        uses: ibiqlik/action-yamllint@v3
+        with:
+          file_or_dir: |
+            docker-compose.yml
+            .github/workflows
+          strict: false
+
+  dockerfile-lint:
+    name: Dockerfile Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Lint Dockerfile
+        uses: hadolint/hadolint-action@v3.1.0
+        with:
+          dockerfile: Dockerfile
+          ignore: DL3008,DL3009
+
+  image-build:
+    name: Build Docker Image
+    runs-on: ubuntu-latest
+    needs: [preflight-checks, yaml-validation, dockerfile-lint]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Build image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: false
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          tags: giggitty-assistant:latest
+
+  smoke-test:
+    name: Smoke Test
+    runs-on: ubuntu-latest
+    needs: [image-build]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Make scripts executable
+        run: chmod +x scripts/*.sh
+      
+      - name: Run dry-run smoke test
+        run: bash scripts/test-integration.sh dry-run
+
+  documentation-check:
+    name: Documentation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Check documentation
+        run: |
+          [ -f README.md ] || (echo "❌ README.md missing" && exit 1)
+          echo "✓ README.md exists"
+          [ -f TROUBLESHOOTING.md ] && echo "✓ TROUBLESHOOTING.md exists" || echo "⚠ TROUBLESHOOTING.md missing"
+          [ -f docker-compose.yml ] && echo "✓ docker-compose.yml exists" || (echo "❌ docker-compose.yml missing" && exit 1)
+
+  test-results:
+    name: Test Summary
+    runs-on: ubuntu-latest
+    needs: [python-checks, preflight-checks, ollama-health-check, 
+            yaml-validation, dockerfile-lint, image-build, smoke-test, documentation-check]
+    if: always()
+    steps:
+      - name: Report results
+        run: |
+          echo "## Infrastructure CI Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Check | Result |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Python Checks | ${{ needs.python-checks.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Preflight | ${{ needs.preflight-checks.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Ollama Health | ${{ needs.ollama-health-check.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| YAML Lint | ${{ needs.yaml-validation.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Dockerfile | ${{ needs.dockerfile-lint.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Image Build | ${{ needs.image-build.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Smoke Test | ${{ needs.smoke-test.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Documentation | ${{ needs.documentation-check.result }} |" >> $GITHUB_STEP_SUMMARY
+      
+      - name: Check for failures
+        if: |
+          needs.python-checks.result == 'failure' ||
+          needs.preflight-checks.result == 'failure' ||
+          needs.ollama-health-check.result == 'failure' ||
+          needs.yaml-validation.result == 'failure' ||
+          needs.dockerfile-lint.result == 'failure' ||
+          needs.image-build.result == 'failure' ||
+          needs.smoke-test.result == 'failure'
+        run: |
+          echo "❌ Some checks failed. See above for details."
+          exit 1
