@@ -1,0 +1,24 @@
+name: Setup Python Toolchain
+
+inputs:
+  python-version:
+    description: Python version to install
+    default: '3.12.11'
+  uv-version:
+    description: uv version to install
+    default: '0.7.18'
+
+runs:
+  using: composite
+  steps:
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ inputs.python-version }}
+
+    - name: Install uv
+      shell: bash
+      run: |
+        set -euo pipefail
+        curl -LsSf https://astral.sh/uv/install.sh | sh -s -- --version ${{ inputs.uv-version }}
+        echo "$HOME/.local/bin" >> "$GITHUB_PATH"

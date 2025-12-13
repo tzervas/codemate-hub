@@ -16,11 +16,11 @@ We use **[uv](https://github.com/astral-sh/uv)** for all Python dependency manag
 ### Installation
 
 ```bash
-# Local development
-curl -LsSf https://astral.sh/uv/install.sh | sh
+# Local development (pin to project toolchain)
+curl -LsSf https://astral.sh/uv/install.sh | sh -s -- --version 0.7.18
 
-# In CI (automatically installed in workflows)
-curl -LsSf https://astral.sh/uv/install.sh | sh
+# In CI (mirrors local install)
+curl -LsSf https://astral.sh/uv/install.sh | sh -s -- --version 0.7.18
 echo "$HOME/.local/bin" >> $GITHUB_PATH
 ```
 
@@ -34,7 +34,7 @@ Generated lock file from `uv lock` command. Ensures reproducible installs across
 
 **Generate/Update:**
 ```bash
-uv lock --python python3.12
+uv lock --python 3.12.11
 ```
 
 ### uv sync
@@ -43,10 +43,10 @@ Synchronizes the local environment with `uv.lock` specifications.
 **Usage:**
 ```bash
 # Development environment
-uv sync --python python3.12
+uv sync --python 3.12.11
 
 # CI (frozen, no updates)
-uv sync --python python3.12 --frozen
+uv sync --python 3.12.11 --frozen
 ```
 
 ## Dependency Conflicts Resolved
@@ -69,23 +69,23 @@ uv sync --python python3.12 --frozen
 
 ## Python Version
 
-- **Target**: Python 3.12+
-- **CI**: Explicitly uses Python 3.12.x from `setup-python` action  
-- **Local**: Specify with `uv` commands via `--python python3.12`
-- **Note**: Python 3.13 has PyO3 compatibility issues with current dependencies (jiter/instructor). Support will be added when dependencies upgrade.
+- **Target**: Python 3.12.11 (pinned)
+- **CI**: Uses Python 3.12.11 via `setup-python` action  
+- **Local**: `uv` automatically installs/uses 3.12.11 based on `pyproject.toml`
+- **Note**: Python 3.13 remains unsupported until dependent native extensions update.
 
 
 ## Dependency Installation in CI
 
 ### python-checks Job
 ```bash
-uv sync --python python3.12 --frozen
+uv sync --python 3.12.11 --frozen
 ```
 Installs all dependencies including optional dev dependencies.
 
 ### memory-initialization Job
 ```bash
-uv sync --python python3.12 --frozen
+uv sync --python 3.12.11 --frozen
 ```
 Uses the same frozen lock for consistency.
 
@@ -94,10 +94,10 @@ Uses the same frozen lock for consistency.
 ### First Time Setup
 ```bash
 # Install uv if not already installed
-curl -LsSf https://astral.sh/uv/install.sh | sh
+curl -LsSf https://astral.sh/uv/install.sh | sh -s -- --version 0.7.18
 
 # Sync environment
-uv sync --python python3.12
+uv sync --python 3.12.11
 ```
 
 ### Running Commands
@@ -106,7 +106,7 @@ uv sync --python python3.12
 uv run python src/memory_setup.py
 
 # With specific version
-uv run --python python3.13 python src/pipeline.py
+uv run --python 3.12.11 python src/pipeline.py
 
 # Direct execution (uses synced environment)
 python src/app.py
@@ -142,7 +142,7 @@ If `uv sync` fails:
 ```bash
 # Clear cache and retry
 rm -rf .venv
-uv sync --python python3.13
+uv sync --python 3.12.11
 ```
 
 ### Version Pinning

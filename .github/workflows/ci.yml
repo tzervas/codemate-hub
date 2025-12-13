@@ -1,5 +1,9 @@
 name: CI
 
+env:
+  PYTHON_VERSION: '3.12.11'
+  UV_VERSION: '0.7.18'
+
 on:
   push:
     branches: [ main, master, 'github-init', 'setup/**' ]
@@ -17,20 +21,17 @@ on:
 jobs:
   python-checks:
     name: Python Lint & Install
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
-      - name: Set up Python
-        uses: actions/setup-python@v4
+      - name: Setup Python toolchain
+        uses: ./.github/actions/setup-python-toolchain
         with:
-          python-version: '3.12'
-      - name: Install uv
-        run: |
-          curl -LsSf https://astral.sh/uv/install.sh | sh
-          echo "$HOME/.local/bin" >> $GITHUB_PATH
+          python-version: ${{ env.PYTHON_VERSION }}
+          uv-version: ${{ env.UV_VERSION }}
       - name: Install dependencies with uv
         run: |
-          uv pip install -r requirements.txt
+          uv pip install --system -r requirements.txt
       - name: Syntax check
         run: |
           python -c "import sys; print('Python OK', sys.version)"
@@ -38,7 +39,7 @@ jobs:
 
   preflight-checks:
     name: Infrastructure Preflight
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -62,7 +63,7 @@ jobs:
 
   ollama-health-check:
     name: Ollama Health Config
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -73,7 +74,7 @@ jobs:
 
   yaml-validation:
     name: YAML Lint
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     continue-on-error: true
     steps:
       - name: Checkout code
@@ -86,7 +87,7 @@ jobs:
 
   dockerfile-lint:
     name: Dockerfile Lint
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -120,25 +121,21 @@ jobs:
 
   memory-initialization:
     name: Memory Initialization Test
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: [python-checks]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
       
-      - name: Set up Python
-        uses: actions/setup-python@v4
+      - name: Setup Python toolchain
+        uses: ./.github/actions/setup-python-toolchain
         with:
-          python-version: '3.12'
-      
-      - name: Install uv
-        run: |
-          curl -LsSf https://astral.sh/uv/install.sh | sh
-          echo "$HOME/.local/bin" >> $GITHUB_PATH
+          python-version: ${{ env.PYTHON_VERSION }}
+          uv-version: ${{ env.UV_VERSION }}
       
       - name: Install dependencies with uv
         run: |
-          uv pip install langchain-chroma langchain-community langchain ollama
+          uv pip install --system langchain-chroma langchain-community langchain ollama
       
       - name: Test memory initialization syntax
         run: |
@@ -151,7 +148,7 @@ jobs:
 
   smoke-test:
     name: Smoke Test
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: [preflight-checks, yaml-validation, dockerfile-lint]
     steps:
       - name: Checkout code
@@ -169,7 +166,7 @@ jobs:
 
   documentation-check:
     name: Documentation
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -183,7 +180,7 @@ jobs:
 
   test-results:
     name: Test Summary
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: [python-checks, preflight-checks, ollama-health-check, yaml-validation, dockerfile-lint, memory-initialization, smoke-test, documentation-check]
     if: always()
     steps:
