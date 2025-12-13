@@ -13,8 +13,10 @@ Environment Variables (for future live mode):
   CHROMA_DB_DIR: Path to persistent Chroma database (default: ./chroma_db)
 """
 
+import hashlib
 import json
 import logging
+import os
 import sys
 import time
 from dataclasses import dataclass
@@ -205,10 +207,20 @@ def run_pipeline(
         logger.info("Using fixture client (testing mode)")
 
     logger.info(f"Starting pipeline with model: {model}")
-    prompt_preview = (
-        f"{prompt[:PROMPT_PREVIEW_LENGTH]}..." if len(prompt) > PROMPT_PREVIEW_LENGTH else prompt
-    )
-    logger.info(f"Prompt: {prompt_preview}")
+
+    # Log only prompt metadata at info level to avoid leaking sensitive content
+    prompt_length = len(prompt)
+    prompt_hash = hashlib.sha256(prompt.encode("utf-8")).hexdigest()[:16]
+    logger.info(f"Prompt metadata - length: {prompt_length}, sha256: {prompt_hash}...")
+
+    # Optionally log a short preview of the prompt only when explicitly enabled
+    log_prompt_content = os.getenv("LOG_PROMPT_CONTENT", "").lower() in ("1", "true", "yes")
+    if log_prompt_content or logger.isEnabledFor(logging.DEBUG):
+        preview_len = min(PROMPT_PREVIEW_LENGTH, prompt_length)
+        prompt_preview = (
+            f"{prompt[:preview_len]}..." if prompt_length > preview_len else prompt
+        )
+        logger.debug(f"Prompt preview: {prompt_preview}")
 
     try:
         # Step 1: Generate response from Ollama

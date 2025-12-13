@@ -98,16 +98,6 @@ CHANGELOG_ONLY_FILES: set[str] = {
     "changelog.md",
 }
 
-# Additional files that, when committed alone, suggest automation (but keep in changelog)
-AUTOMATION_ONLY_FILES: set[str] = {
-    "CHANGELOG.md",
-    "uv.lock",
-    "poetry.lock",
-    "package-lock.json",
-    "yarn.lock",
-    "Cargo.lock",
-}
-
 # Contributor type enum values
 CONTRIBUTOR_HUMAN = "Human"
 CONTRIBUTOR_BOT = "Bot"
