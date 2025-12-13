@@ -3,12 +3,12 @@ Project Plan & Milestones
 Milestones
 ----------
 1. Discovery & baseline (this checkpoint): repo review, trackers created, decomposition finished. (Done)
-2. Infrastructure: make `docker-compose` robust, healthchecks, and GPU compatibility checks. (1-2 days)
-3. Models & Data: configure Ollama models, Chroma persistence, and memory initialization. (2-3 days, Done)
-4. Application & Pipeline: test `src/pipeline.py`, add CI for pipeline runs. (2-3 days, In Progress)
-5. Langflow flows: create reproducible flows for common tasks and store in `langflow_data`. (2 days)
-6. Enclaves: test `zephyr` enclaves and integrate with `app`. (2-4 days)
-7. Dev UX & automation: polish `code-server` workspace, docs, scripts, deployment automation. (1-2 days)
+2. Infrastructure: make `docker-compose` robust, healthchecks, and GPU compatibility checks. (Done)
+3. Models & Data: configure Ollama models, Chroma persistence, and memory initialization. (Done)
+4. Application & Pipeline: test `src/pipeline.py`, add CI for pipeline runs. (Done)
+5. Langflow flows: create reproducible flows for common tasks and store in `langflow_data`. (Pending)
+6. Enclaves: test `zephyr` enclaves and integrate with `app`. (Pending)
+7. Dev UX & automation: polish `code-server` workspace, docs, scripts, deployment automation. (Pending)
 
 Timeline (example)
 ------------------
