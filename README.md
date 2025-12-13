@@ -115,8 +115,10 @@ Memory embeddings are persisted in the `chroma_db` volume:
 To reset the memory database:
 
 ```bash
-docker-compose down -v chroma_db
-# or manually:
+# Stop containers and remove all volumes
+docker-compose down -v
+
+# Then explicitly remove the chroma_db directory
 rm -rf chroma_db/
 ```
 
@@ -130,7 +132,7 @@ docker system df
 
 Shows total size of Docker images, containers, and volumes.
 
-#### List Pruneable Models
+#### List Prunable Models
 
 ```bash
 ./scripts/model-prune.sh list-unused
