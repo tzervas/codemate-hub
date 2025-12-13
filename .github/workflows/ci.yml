@@ -1,5 +1,9 @@
 name: CI
 
+env:
+  PYTHON_VERSION: '3.12.11'
+  UV_VERSION: '0.7.18'
+
 on:
   push:
     branches: [ main, master, 'github-init', 'setup/**' ]
@@ -17,17 +21,17 @@ on:
 jobs:
   python-checks:
     name: Python Lint & Install
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
-      - name: Set up Python
-        uses: actions/setup-python@v4
+      - name: Setup Python toolchain
+        uses: ./.github/actions/setup-python-toolchain
         with:
-          python-version: '3.12'
-      - name: Install dependencies
+          python-version: ${{ env.PYTHON_VERSION }}
+          uv-version: ${{ env.UV_VERSION }}
+      - name: Install dependencies with uv
         run: |
-          python -m pip install --upgrade pip
-          if [ -f requirements.txt ]; then pip install --no-cache-dir -r requirements.txt || true; fi
+          uv pip install --system -r requirements.txt
       - name: Syntax check
         run: |
           python -c "import sys; print('Python OK', sys.version)"
@@ -35,7 +39,7 @@ jobs:
 
   preflight-checks:
     name: Infrastructure Preflight
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -59,7 +63,7 @@ jobs:
 
   ollama-health-check:
     name: Ollama Health Config
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -70,7 +74,7 @@ jobs:
 
   yaml-validation:
     name: YAML Lint
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     continue-on-error: true
     steps:
       - name: Checkout code
@@ -83,7 +87,7 @@ jobs:
 
   dockerfile-lint:
     name: Dockerfile Lint
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -113,11 +117,38 @@ jobs:
   #         push: false
   #         cache-from: type=gha
   #         cache-to: type=gha,mode=max
-  #         tags: giggitty-assistant:latest
+  #         tags: codemate-hub:latest
+
+  memory-initialization:
+    name: Memory Initialization Test
+    runs-on: ubuntu-24.04
+    needs: [python-checks]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Python toolchain
+        uses: ./.github/actions/setup-python-toolchain
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          uv-version: ${{ env.UV_VERSION }}
+      
+      - name: Install dependencies with uv
+        run: |
+          uv pip install --system langchain-chroma langchain-community langchain ollama
+      
+      - name: Test memory initialization syntax
+        run: |
+          python -c "from src.memory_setup import initialize_memory, load_preseeds; print('✓ Memory module imports successfully')"
+      
+      - name: Test memory_setup.py can run
+        run: |
+          python -c "import src.memory_setup; print('✓ Memory setup module valid')"
+          echo "✓ Memory initialization tests passed"
 
   smoke-test:
     name: Smoke Test
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: [preflight-checks, yaml-validation, dockerfile-lint]
     steps:
       - name: Checkout code
@@ -135,7 +166,7 @@ jobs:
 
   documentation-check:
     name: Documentation
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -149,8 +180,8 @@ jobs:
 
   test-results:
     name: Test Summary
-    runs-on: ubuntu-latest
-    needs: [python-checks, preflight-checks, ollama-health-check, yaml-validation, dockerfile-lint, smoke-test, documentation-check]
+    runs-on: ubuntu-24.04
+    needs: [python-checks, preflight-checks, ollama-health-check, yaml-validation, dockerfile-lint, memory-initialization, smoke-test, documentation-check]
     if: always()
     steps:
       - name: Check for failures
@@ -161,6 +192,7 @@ jobs:
           echo "  Ollama Health: ${{ needs.ollama-health-check.result }}"
           echo "  YAML Lint: ${{ needs.yaml-validation.result }}"
           echo "  Dockerfile: ${{ needs.dockerfile-lint.result }}"
+          echo "  Memory Init: ${{ needs.memory-initialization.result }}"
           echo "  Smoke Test: ${{ needs.smoke-test.result }}"
           echo "  Documentation: ${{ needs.documentation-check.result }}"
           
@@ -170,6 +202,7 @@ jobs:
              [[ "${{ needs.ollama-health-check.result }}" == "failure" ]] || \
              [[ "${{ needs.yaml-validation.result }}" == "failure" ]] || \
              [[ "${{ needs.dockerfile-lint.result }}" == "failure" ]] || \
+             [[ "${{ needs.memory-initialization.result }}" == "failure" ]] || \
              [[ "${{ needs.smoke-test.result }}" == "failure" ]] || \
              [[ "${{ needs.documentation-check.result }}" == "failure" ]]; then
             echo "❌ Some checks failed"
