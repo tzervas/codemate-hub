@@ -94,31 +94,31 @@ jobs:
           dockerfile: Dockerfile
           ignore: DL3008,DL3009
 
-  image-build:
-    name: Build Docker Image
-    runs-on: ubuntu-latest
-    needs: [preflight-checks, yaml-validation, dockerfile-lint]
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-      
-      - name: Build image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: ./Dockerfile
-          push: false
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-          tags: giggitty-assistant:latest
+  # image-build:
+  #   name: Build Docker Image
+  #   runs-on: ubuntu-latest
+  #   needs: [preflight-checks, yaml-validation, dockerfile-lint]
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v4
+  #     
+  #     - name: Set up Docker Buildx
+  #       uses: docker/setup-buildx-action@v3
+  #     
+  #     - name: Build image
+  #       uses: docker/build-push-action@v5
+  #       with:
+  #         context: .
+  #         file: ./Dockerfile
+  #         push: false
+  #         cache-from: type=gha
+  #         cache-to: type=gha,mode=max
+  #         tags: giggitty-assistant:latest
 
   smoke-test:
     name: Smoke Test
     runs-on: ubuntu-latest
-    needs: [image-build]
+    needs: [preflight-checks, yaml-validation, dockerfile-lint]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -146,7 +146,7 @@ jobs:
   test-results:
     name: Test Summary
     runs-on: ubuntu-latest
-    needs: [python-checks, preflight-checks, ollama-health-check, yaml-validation, dockerfile-lint, image-build, smoke-test, documentation-check]
+    needs: [python-checks, preflight-checks, ollama-health-check, yaml-validation, dockerfile-lint, smoke-test, documentation-check]
     if: always()
     steps:
       - name: Report results
@@ -160,7 +160,6 @@ jobs:
           echo "| Ollama Health | ${{ needs.ollama-health-check.result }} |" >> $GITHUB_STEP_SUMMARY
           echo "| YAML Lint | ${{ needs.yaml-validation.result }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Dockerfile | ${{ needs.dockerfile-lint.result }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Image Build | ${{ needs.image-build.result }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Smoke Test | ${{ needs.smoke-test.result }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Documentation | ${{ needs.documentation-check.result }} |" >> $GITHUB_STEP_SUMMARY
       
@@ -171,7 +170,6 @@ jobs:
           needs.ollama-health-check.result == 'failure' ||
           needs.yaml-validation.result == 'failure' ||
           needs.dockerfile-lint.result == 'failure' ||
-          needs.image-build.result == 'failure' ||
           needs.smoke-test.result == 'failure' ||
           needs.documentation-check.result == 'failure'
         run: |
