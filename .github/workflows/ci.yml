@@ -30,7 +30,7 @@ jobs:
           echo "$HOME/.local/bin" >> $GITHUB_PATH
       - name: Install dependencies with uv
         run: |
-          uv pip install -r requirements.txt
+          uv pip install --only-binary :all: -r requirements.txt
       - name: Syntax check
         run: |
           python -c "import sys; print('Python OK', sys.version)"
@@ -138,7 +138,7 @@ jobs:
       
       - name: Install dependencies with uv
         run: |
-          uv pip install langchain-chroma langchain-community langchain ollama
+          uv pip install --only-binary :all: langchain-chroma langchain-community langchain ollama
       
       - name: Test memory initialization syntax
         run: |
