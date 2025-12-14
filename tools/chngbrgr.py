@@ -26,10 +26,14 @@ from tools.chngbrgr.render import render_changelog
 def normalize_for_comparison(text: str) -> str:
     """Normalize changelog text for comparison, removing volatile fields.
 
-    Removes date-sensitive content that varies by timezone/day but doesn't
-    represent actual content changes:
-    - Last updated date in header
-    - Snapshot date headers
+    Removes content that varies between environments but doesn't represent
+    actual documentation changes:
+    - Last updated date in header (timezone differences)
+    - Snapshot date headers (timezone differences)
+    - Git commit/PR enrichment sections (shallow clone differences)
+    - Progress Log sections (git-derived)
+
+    The tracker content hashes (<!-- hash:xxx -->) capture real doc changes.
 
     Args:
         text: Raw changelog text
@@ -41,6 +45,12 @@ def normalize_for_comparison(text: str) -> str:
     text = re.sub(r"_Last updated: \d{4}-\d{2}-\d{2}_\n?", "", text)
     # Normalize snapshot headers to ignore date (keep structure)
     text = re.sub(r"## Snapshot \d{4}-\d{2}-\d{2}", "## Snapshot", text)
+    # Remove Progress Log sections entirely (git-derived, varies with history depth)
+    text = re.sub(r"Progress Log:.*?(?=\n####|\n###|\n##|\Z)", "", text, flags=re.DOTALL)
+    # Remove any "Recent Commits" or "Recent Changes" sections (git-derived)
+    text = re.sub(r"### Recent (?:Commits|Changes).*?(?=\n###|\n##|\Z)", "", text, flags=re.DOTALL)
+    # Normalize multiple blank lines to single
+    text = re.sub(r"\n{3,}", "\n\n", text)
     return text.strip()
 
 

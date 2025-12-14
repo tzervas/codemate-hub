@@ -26,8 +26,6 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0  # Full history for changelog git enrichment
       - name: Setup Python toolchain
         uses: ./.github/actions/setup-python-toolchain
         with:
@@ -42,7 +40,9 @@ jobs:
           uv run python -c "import compileall, sys; sys.exit(0 if compileall.compile_dir('src', quiet=1) else 1)" || echo "⚠ Some files not compilable (expected for stubs)"
       - name: Verify changelog is current
         run: |
-          uv run python tools/chngbrgr.py --check
+          # Check tracker content only (--no-git) since git history varies by branch
+          # Tracker hashes (<!-- hash:xxx -->) capture actual documentation changes
+          uv run python tools/chngbrgr.py --check --no-git
 
   preflight-checks:
     name: Infrastructure Preflight
