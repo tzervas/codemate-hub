@@ -41,8 +41,8 @@ jobs:
       - name: Verify changelog is current
         run: |
           # Check tracker content only (--no-git) since git history varies by branch
-          # Tracker hashes (<!-- hash:xxx -->) capture actual documentation changes
-          uv run python tools/chngbrgr.py --check --no-git
+          # Use --debug to get detailed diff info if check fails
+          uv run python tools/chngbrgr.py --check --no-git --debug
 
   preflight-checks:
     name: Infrastructure Preflight
