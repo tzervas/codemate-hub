@@ -14,12 +14,34 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import re
 import sys
 from typing import List, Optional
 
 from tools.chngbrgr.config import CHANGELOG_PATH
 from tools.chngbrgr.git import validate_date_format
 from tools.chngbrgr.render import render_changelog
+
+
+def normalize_for_comparison(text: str) -> str:
+    """Normalize changelog text for comparison, removing volatile fields.
+
+    Removes date-sensitive content that varies by timezone/day but doesn't
+    represent actual content changes:
+    - Last updated date in header
+    - Snapshot date headers
+
+    Args:
+        text: Raw changelog text
+
+    Returns:
+        Normalized text suitable for content comparison
+    """
+    # Remove "Last updated: YYYY-MM-DD" line
+    text = re.sub(r"_Last updated: \d{4}-\d{2}-\d{2}_\n?", "", text)
+    # Normalize snapshot headers to ignore date (keep structure)
+    text = re.sub(r"## Snapshot \d{4}-\d{2}-\d{2}", "## Snapshot", text)
+    return text.strip()
 
 
 def main(argv: Optional[List[str]] = None) -> int:
@@ -66,7 +88,9 @@ def main(argv: Optional[List[str]] = None) -> int:
             print("CHANGELOG.md is missing. Run tools/chngbrgr.py to create it.", file=sys.stderr)
             return 1
         existing = CHANGELOG_PATH.read_text(encoding="utf-8")
-        if existing != changelog_content:
+        # Compare normalized content to ignore timezone-sensitive date fields
+        # The actual tracker content hashes (<!-- hash:xxx -->) capture real changes
+        if normalize_for_comparison(existing) != normalize_for_comparison(changelog_content):
             print("CHANGELOG.md is out of date. Run tools/chngbrgr.py to refresh.", file=sys.stderr)
             return 1
         return 0
