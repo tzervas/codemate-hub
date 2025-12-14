@@ -413,8 +413,10 @@ def render_changelog(
     # Use explicit --since if provided, else previous snapshot date
     effective_since = since_date or _previous_snapshot_date(existing_dates, today)
 
-    if only_today:
+    if only_today or not suppress_duplicates:
         # Only generate today's snapshot, don't include history
+        # Also skip history in --check mode (suppress_duplicates=False) to avoid
+        # date mismatch issues between CI (UTC) and local timezone
         history_without_today = ""
     else:
         history_without_today = remove_snapshot(history, today)
