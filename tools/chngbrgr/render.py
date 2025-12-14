@@ -383,6 +383,7 @@ def render_changelog(
     include_git: bool = True,
     since_date: Optional[str] = None,
     only_today: bool = False,
+    suppress_duplicates: bool = True,
 ) -> str:
     """Render complete changelog content.
 
@@ -391,6 +392,7 @@ def render_changelog(
         include_git: Include git commit enrichment
         since_date: Only include commits since this date
         only_today: Generate only today's snapshot without history
+        suppress_duplicates: Use hash-based duplicate suppression (set False for --check)
 
     Returns:
         Complete changelog markdown text
@@ -417,7 +419,7 @@ def render_changelog(
     else:
         history_without_today = remove_snapshot(history, today)
 
-    snapshot = build_snapshot(today, grouped, effective_since, include_git, history)
+    snapshot = build_snapshot(today, grouped, effective_since, include_git, history if suppress_duplicates else "")
 
     header = "\n".join(["# Changelog", "", f"_Last updated: {today}_", ""]) + "\n"
 
