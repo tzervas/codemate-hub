@@ -217,7 +217,8 @@ def hash_tracker_content(tracker: Dict[str, object]) -> str:
     Returns:
         8-character MD5 hash of tracker content
     """
-    content = f"{tracker.get('status', '')}{tracker.get('summary', '')}{tracker.get('progress', '')}"
+    tags = ",".join(tracker.get("tags", []) or [])
+    content = f"{tracker.get('status', '')}{tracker.get('summary', '')}{tracker.get('progress', '')}{tags}"
     return hashlib.md5(content.encode()).hexdigest()[:8]
 
 
@@ -294,6 +295,9 @@ def build_section_with_hash(
     branch = tracker.get("active_branch")
     if branch:
         lines.append(f"- Branch: {branch}")
+    tags = tracker.get("tags") or []
+    if tags:
+        lines.append(f"- Tags: {', '.join(tags)}")
 
     summary = tracker.get("summary") or []
     if summary:
