@@ -65,6 +65,18 @@ def normalize_for_comparison(text: str, debug: bool = False) -> str:
     if debug:
         logger.debug(f"After snapshot normalization: {len(text)} chars")
     
+    # Remove hash comment markers from tracker headers (<!-- hash:xxx -->)
+    # These are content fingerprints that vary between generator runs
+    text = re.sub(r" <!-- hash:[a-f0-9]+ -->", "", text)
+    if debug:
+        logger.debug(f"After hash marker removal: {len(text)} chars")
+    
+    # Remove "unchanged since" markers that appear in freshly generated content
+    # _(unchanged since YYYY-MM-DD)_ on its own line
+    text = re.sub(r"\n_\(unchanged since \d{4}-\d{2}-\d{2}\)_", "", text)
+    if debug:
+        logger.debug(f"After unchanged marker removal: {len(text)} chars")
+    
     # Remove Progress Log sections entirely (git-derived, varies with history depth)
     text = re.sub(r"Progress Log:.*?(?=\n####|\n###|\n##|\Z)", "", text, flags=re.DOTALL)
     if debug:
@@ -74,6 +86,9 @@ def normalize_for_comparison(text: str, debug: bool = False) -> str:
     text = re.sub(r"### Recent (?:Commits|Changes).*?(?=\n###|\n##|\Z)", "", text, flags=re.DOTALL)
     if debug:
         logger.debug(f"After Recent sections removal: {len(text)} chars")
+    
+    # Strip trailing whitespace from each line (hash removal can leave orphan spaces)
+    text = "\n".join(line.rstrip() for line in text.split("\n"))
     
     # Normalize multiple blank lines to single
     text = re.sub(r"\n{3,}", "\n\n", text)
