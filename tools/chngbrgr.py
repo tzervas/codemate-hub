@@ -60,30 +60,31 @@ def normalize_for_comparison(text: str, debug: bool = False) -> str:
     if debug:
         logger.debug(f"After date header removal: {len(text)} chars (was {original_len})")
     
-    # Normalize snapshot headers to ignore date (keep structure)
-    text = re.sub(r"## Snapshot \d{4}-\d{2}-\d{2}", "## Snapshot", text)
+    # Normalize snapshot headers to ignore date/time suffix (keep structure)
+    text = re.sub(r"## Snapshot\s+\d{4}-\d{2}-\d{2}(?:[ T]\S+)?", "## Snapshot", text)
     if debug:
         logger.debug(f"After snapshot normalization: {len(text)} chars")
-    
+
     # Remove hash comment markers from tracker headers (<!-- hash:xxx -->)
     # These are content fingerprints that vary between generator runs
     text = re.sub(r" <!-- hash:[a-f0-9]+ -->", "", text)
     if debug:
         logger.debug(f"After hash marker removal: {len(text)} chars")
-    
+
     # Remove "unchanged since" markers that appear in freshly generated content
     # _(unchanged since YYYY-MM-DD)_ on its own line
     text = re.sub(r"\n_\(unchanged since \d{4}-\d{2}-\d{2}\)_", "", text)
     if debug:
         logger.debug(f"After unchanged marker removal: {len(text)} chars")
-    
+
     # Remove Progress Log sections entirely (git-derived, varies with history depth)
-    text = re.sub(r"Progress Log:.*?(?=\n####|\n###|\n##|\Z)", "", text, flags=re.DOTALL)
+    # Match markdown heading (### Progress Log) with optional colon, up to next heading
+    text = re.sub(r"^### Progress Log:?.*?(?=\n###|\n##|\Z)", "", text, flags=re.DOTALL | re.MULTILINE)
     if debug:
         logger.debug(f"After Progress Log removal: {len(text)} chars")
-    
+
     # Remove any "Recent Commits" or "Recent Changes" sections (git-derived)
-    text = re.sub(r"### Recent (?:Commits|Changes).*?(?=\n###|\n##|\Z)", "", text, flags=re.DOTALL)
+    text = re.sub(r"^### Recent (?:Commits|Changes).*?(?=\n###|\n##|\Z)", "", text, flags=re.DOTALL | re.MULTILINE)
     if debug:
         logger.debug(f"After Recent sections removal: {len(text)} chars")
     
@@ -92,7 +93,8 @@ def normalize_for_comparison(text: str, debug: bool = False) -> str:
     
     # Normalize multiple blank lines to single
     text = re.sub(r"\n{3,}", "\n\n", text)
-    result = text.strip()
+    # Preserve outer newlines; trim only excessive whitespace at ends
+    result = text.strip("\n")
     
     if debug:
         logger.debug(f"Final normalized length: {len(result)} chars")
