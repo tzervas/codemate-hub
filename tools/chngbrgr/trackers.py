@@ -6,6 +6,7 @@ from the trackers/tasks directory.
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 from typing import Dict, List
 
@@ -78,11 +79,27 @@ def read_tracker(path: Path) -> Dict[str, object]:
                 bullets.append(f"- {stripped}")
         return bullets
 
+    def normalize_tags(raw: str) -> List[str]:
+        tags: List[str] = []
+        seen = set()
+        for chunk in raw.split(","):
+            clean = chunk.strip()
+            if not clean:
+                continue
+            slug = re.sub(r"[^a-z0-9_-]+", "-", clean.lower().replace(" ", "-")).strip("-")
+            if not slug:
+                continue
+            if slug not in seen:
+                seen.add(slug)
+                tags.append(slug)
+        return tags
+
     title = lines[0].lstrip("# ").strip()
     status = extract_line("Status:")
     completion_date = extract_line("Completion Date:")
     start_date = extract_line("Start Date:")
     active_branch = extract_line("Active Branch:")
+    tags = normalize_tags(extract_line("Tags:"))
 
     summary = as_bullets(extract_section("Summary of Work"))
     progress = as_bullets(extract_section("Progress Log"))
@@ -95,6 +112,7 @@ def read_tracker(path: Path) -> Dict[str, object]:
         "active_branch": active_branch,
         "summary": summary,
         "progress": progress,
+        "tags": tags,
         "path": path,
     }
 

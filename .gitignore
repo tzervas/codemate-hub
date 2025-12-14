@@ -26,7 +26,6 @@ chroma_db/
 langflow_data/
 
 # Docker / build
-.dockerignore
 dist/
 build/
 *.egg-info/

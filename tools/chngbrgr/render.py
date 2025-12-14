@@ -217,7 +217,8 @@ def hash_tracker_content(tracker: Dict[str, object]) -> str:
     Returns:
         8-character MD5 hash of tracker content
     """
-    content = f"{tracker.get('status', '')}{tracker.get('summary', '')}{tracker.get('progress', '')}"
+    tags = ",".join(tracker.get("tags", []) or [])
+    content = f"{tracker.get('status', '')}{tracker.get('summary', '')}{tracker.get('progress', '')}{tags}"
     return hashlib.md5(content.encode()).hexdigest()[:8]
 
 
@@ -294,6 +295,9 @@ def build_section_with_hash(
     branch = tracker.get("active_branch")
     if branch:
         lines.append(f"- Branch: {branch}")
+    tags = tracker.get("tags") or []
+    if tags:
+        lines.append(f"- Tags: {', '.join(tags)}")
 
     summary = tracker.get("summary") or []
     if summary:
@@ -383,6 +387,7 @@ def render_changelog(
     include_git: bool = True,
     since_date: Optional[str] = None,
     only_today: bool = False,
+    suppress_duplicates: bool = True,
 ) -> str:
     """Render complete changelog content.
 
@@ -391,6 +396,7 @@ def render_changelog(
         include_git: Include git commit enrichment
         since_date: Only include commits since this date
         only_today: Generate only today's snapshot without history
+        suppress_duplicates: Use hash-based duplicate suppression (set False for --check)
 
     Returns:
         Complete changelog markdown text
@@ -411,13 +417,15 @@ def render_changelog(
     # Use explicit --since if provided, else previous snapshot date
     effective_since = since_date or _previous_snapshot_date(existing_dates, today)
 
-    if only_today:
+    if only_today or not suppress_duplicates:
         # Only generate today's snapshot, don't include history
+        # Also skip history in --check mode (suppress_duplicates=False) to avoid
+        # date mismatch issues between CI (UTC) and local timezone
         history_without_today = ""
     else:
         history_without_today = remove_snapshot(history, today)
 
-    snapshot = build_snapshot(today, grouped, effective_since, include_git, history)
+    snapshot = build_snapshot(today, grouped, effective_since, include_git, history if suppress_duplicates else "")
 
     header = "\n".join(["# Changelog", "", f"_Last updated: {today}_", ""]) + "\n"
 
