@@ -6,8 +6,8 @@ from services.review_orchestrator.security.prompt_sanitizer import PromptSanitiz
 
 app = FastAPI()
 
-# Initialize sanitizer
-sanitizer = PromptSanitizer()
+# Module-level sanitizer singleton for efficient pattern reuse
+_sanitizer = PromptSanitizer()
 
 
 class PromptRequest(BaseModel):
@@ -42,7 +42,7 @@ def sanitize_prompt(request: PromptRequest) -> PromptResponse:
     """
     try:
         original_length = len(request.prompt)
-        sanitized = sanitizer.sanitize(request.prompt)
+        sanitized = _sanitizer.sanitize(request.prompt)
         sanitized_length = len(sanitized)
         
         return PromptResponse(

@@ -206,8 +206,16 @@ def run_pipeline(
     # Step 0: Sanitize user input to prevent prompt injection attacks
     # Use module-level singleton for efficient pattern reuse
     try:
+        original_prompt = prompt
         prompt = _sanitizer.sanitize(prompt)
-        logger.info("✓ Input sanitized successfully")
+        # Only log if sanitization actually changed the prompt
+        if prompt != original_prompt:
+            logger.warning(
+                f"Dangerous patterns detected and removed from input "
+                f"(original: {len(original_prompt)} chars, sanitized: {len(prompt)} chars)"
+            )
+        else:
+            logger.debug("Input sanitization completed (no changes)")
     except ValueError as e:
         logger.error(f"Input validation failed: {e}")
         duration_ms = _calculate_duration_ms(start_time)
