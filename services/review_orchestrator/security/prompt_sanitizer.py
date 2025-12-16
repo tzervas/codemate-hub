@@ -6,7 +6,7 @@ and removing dangerous patterns from user input.
 """
 
 import re
-from typing import List, Pattern
+from typing import List
 
 
 class PromptSanitizer:
@@ -27,12 +27,12 @@ class PromptSanitizer:
     def __init__(self):
         """Initialize sanitizer with pre-compiled regex patterns for performance."""
         # Pre-compile patterns for better performance
-        self._compiled_patterns: List[Pattern[str]] = [
+        self._compiled_patterns: List[re.Pattern[str]] = [
             re.compile(pattern, flags=re.IGNORECASE)
             for pattern in self.DANGEROUS_PATTERNS
         ]
         # Pre-compile whitespace pattern
-        self._whitespace_pattern: Pattern[str] = re.compile(r"\s+")
+        self._whitespace_pattern: re.Pattern[str] = re.compile(r"\s+")
 
     def sanitize(self, user_input: str) -> str:
         """Remove potential prompt injection attempts.
