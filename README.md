@@ -336,6 +336,8 @@ Codemate Hub includes built-in protection against prompt injection attacks throu
 - **Whitespace Normalization**: Removes excessive whitespace while preserving readability
 - **Case-Insensitive Matching**: Detects patterns regardless of capitalization
 - **Non-greedy Regex**: Efficiently handles multiple pattern occurrences
+- **Pre-compiled Patterns**: Optimized performance with compiled regex patterns
+- **Early Exit**: Fast-path for empty inputs
 
 **Integration:**
 
