@@ -265,7 +265,35 @@ If ports are already in use:
 - `scripts/`: Deployment and utility scripts
 - `zephyr/`: Enclave runtimes and execution environments
 - `insights/`: Bootstrap data and domain preseeds
-- `langflow_data/`: Langflow workspace and flows (persisted)
+- `langflow_data/`: Langflow workspace and flows (persisted, not in git)
+- `docs/langflow/`: Langflow documentation and example flows
+
+## Langflow Workflows
+
+Langflow provides a visual interface for creating AI workflows. See [docs/langflow/README.md](docs/langflow/README.md) for complete documentation.
+
+### Quick Start with Langflow
+
+1. Access Langflow UI at http://localhost:7860 after deployment
+2. Import example flows from `docs/langflow/examples/`
+3. Configure Ollama connection: `http://ollama:11434`
+4. Create and test workflows visually
+
+### Available Example Flows
+
+- **Simple Code Generation**: Generate code from natural language descriptions
+- **Code Review with Context**: Review code with specific focus areas
+- **Documentation Generator**: Generate comprehensive code documentation
+
+See [docs/langflow/examples/README.md](docs/langflow/examples/README.md) for detailed flow documentation.
+
+### Integration with Pipeline
+
+Langflow workflows can complement or replace parts of the Python pipeline. See [docs/langflow/FLOW_PATTERNS.md](docs/langflow/FLOW_PATTERNS.md) for:
+- Flow pattern catalog
+- Pipeline-to-Langflow mapping
+- Integration strategies
+- Best practices
 
 ## Development
 
@@ -366,6 +394,7 @@ The CI pipeline automatically uses `.env.ci` for testing. Sensitive values are i
 ## For More Information
 
 - See `trackers/` for detailed project planning and milestones
-- See `SPEC.md` for technical specifications
-- See `OVERVIEW.md` for architecture overview
+- See `trackers/SPEC.md` for technical specifications
+- See `trackers/OVERVIEW.md` for architecture overview
+- See `docs/langflow/` for Langflow workflow documentation and examples
 
