@@ -8,6 +8,7 @@ A containerized multi-service platform for running an AI-powered coding assistan
 - **Langflow**: Visual workflow orchestration (port 7860)
 - **Code-Server**: Remote VS Code IDE (port 8080)
 - **App**: Python coding assistant with pipeline runner (port 8000)
+- **Docs**: Self-hosted documentation and wiki (port 8001)
 
 ## Quick Start
 
@@ -51,6 +52,7 @@ Once deployment is complete:
 - **Langflow UI**: http://localhost:7860
 - **Code Server**: http://localhost:8080 (password in .env)
 - **Ollama API**: http://localhost:11434
+- **Documentation**: http://localhost:8001
 
 ## Common Commands
 
@@ -363,9 +365,64 @@ gh secret list
 
 The CI pipeline automatically uses `.env.ci` for testing. Sensitive values are injected via GitHub Secrets in the workflow.
 
+## Documentation
+
+Codemate Hub includes comprehensive self-hosted documentation built with MkDocs Material.
+
+### Accessing Documentation
+
+Once deployed, visit http://localhost:8001 to access the documentation site with:
+
+- Getting Started guides
+- Architecture documentation
+- API reference (auto-generated from Python docstrings)
+- Development guides
+- Troubleshooting information
+
+### Building Documentation Locally
+
+```bash
+# Build static documentation
+./scripts/docs-build.sh build
+
+# Serve with live reload (useful for documentation development)
+./scripts/docs-build.sh serve
+
+# Validate documentation structure
+./scripts/docs-build.sh validate
+```
+
+### Generating API Documentation
+
+API documentation is automatically generated from Python docstrings:
+
+```bash
+./scripts/docs-generate.sh
+```
+
+This scans Python modules in `src/` and generates documentation pages with usage examples.
+
+### Documentation Structure
+
+```
+docs/
+├── getting-started/    # Installation, configuration, tutorials
+├── architecture/       # System design and data flows
+├── api-reference/      # Auto-generated API documentation
+├── development/        # Contributing, testing, debugging
+└── guides/            # Model management, troubleshooting, etc.
+```
+
+### Contributing to Documentation
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for documentation style guidelines and workflows.
+
 ## For More Information
 
-- See `trackers/` for detailed project planning and milestones
-- See `SPEC.md` for technical specifications
+- 📖 **Documentation Site**: http://localhost:8001 (when deployed)
+- 📋 **Project Tracker**: See `trackers/` for detailed planning and milestones
+- 🔧 **Technical Specs**: See `trackers/SPEC.md` for specifications
+- 🛠️ **Development**: See [TOOLING.md](TOOLING.md) for dependency management
+- 🐛 **Troubleshooting**: See [TROUBLESHOOTING.md](TROUBLESHOOTING.md) for common issues
 - See `OVERVIEW.md` for architecture overview
 

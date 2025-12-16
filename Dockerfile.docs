@@ -1,0 +1,28 @@
+# Documentation Service Dockerfile
+# Serves MkDocs documentation site with Material theme
+
+FROM python:3.12-slim
+
+# Set working directory
+WORKDIR /docs
+
+# Install MkDocs and required plugins
+RUN pip install --no-cache-dir \
+    mkdocs==1.6.0 \
+    mkdocs-material==9.5.39 \
+    mkdocstrings[python]==0.26.1 \
+    pymdown-extensions==10.11.2
+
+# Copy documentation source files
+COPY mkdocs.yml /docs/
+COPY docs/ /docs/docs/
+
+# Copy Python source for API documentation generation
+COPY src/ /docs/src/
+
+# Expose documentation server port
+EXPOSE 8001
+
+# Serve documentation with auto-reload
+# In production, use: mkdocs build && python -m http.server 8001 -d site
+CMD ["mkdocs", "serve", "--dev-addr=0.0.0.0:8001"]
