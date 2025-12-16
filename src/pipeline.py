@@ -208,11 +208,11 @@ def run_pipeline(
     try:
         original_prompt = prompt
         prompt = _sanitizer.sanitize(prompt)
-        # Only log if sanitization actually changed the prompt
+        # Log at debug level only - avoid exposing security filtering to potential attackers
         if prompt != original_prompt:
-            logger.warning("Input sanitization completed with modifications")
+            logger.debug("Input sanitization applied modifications")
         else:
-            logger.debug("Input sanitization completed (no changes)")
+            logger.debug("Input sanitization completed")
     except ValueError as e:
         logger.error(f"Input validation failed: {e}")
         duration_ms = _calculate_duration_ms(start_time)
