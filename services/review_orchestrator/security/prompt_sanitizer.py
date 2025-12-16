@@ -50,7 +50,10 @@ class PromptSanitizer:
             return ""
 
         if len(user_input) > self.MAX_INPUT_LENGTH:
-            raise ValueError("Input exceeds maximum length")
+            raise ValueError(
+                f"Input exceeds maximum length of {self.MAX_INPUT_LENGTH} characters "
+                f"(provided: {len(user_input)} characters)"
+            )
 
         sanitized = user_input
 

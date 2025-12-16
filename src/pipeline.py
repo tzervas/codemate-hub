@@ -210,10 +210,7 @@ def run_pipeline(
         prompt = _sanitizer.sanitize(prompt)
         # Only log if sanitization actually changed the prompt
         if prompt != original_prompt:
-            logger.warning(
-                f"Dangerous patterns detected and removed from input "
-                f"(original: {len(original_prompt)} chars, sanitized: {len(prompt)} chars)"
-            )
+            logger.warning("Dangerous patterns detected and removed from input")
         else:
             logger.debug("Input sanitization completed (no changes)")
     except ValueError as e:
