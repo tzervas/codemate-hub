@@ -20,13 +20,28 @@ A containerized multi-service platform for running an AI-powered coding assistan
 
 ### 2. Configuration
 
+The application requires environment variables for proper operation. A template is provided:
+
 ```bash
 # Copy example environment file
 cp .env.example .env
 
-# Edit .env and set PASSWORD for code-server
+# Edit .env and set required values
 nano .env
 ```
+
+**Required environment variables:**
+- `PASSWORD` - Code-server authentication password (minimum 8 characters recommended)
+- `OLLAMA_BASE_URL` - Ollama API endpoint (default: `http://ollama:11434`)
+- `CHROMA_DB_DIR` - Chroma database directory (default: `/app/chroma_db`)
+
+**Optional variables:**
+- `OPENAI_API_KEY` - For GPT models
+- `ANTHROPIC_API_KEY` - For Claude models
+- `OLLAMA_NUM_PARALLEL` - Parallel request limit (default: 4)
+- `OLLAMA_NUM_THREAD` - Thread count for computation (default: 4)
+
+**Tip:** Run `./scripts/preflight-check.sh` to validate your configuration. It will automatically create `.env` from the template if missing.
 
 ### 3. Deploy
 
@@ -190,7 +205,132 @@ docker-compose down
 
 ```bash
 ./scripts/teardown.sh
+
+# Or skip confirmation with force flag
+./scripts/teardown.sh --force
 ```
+
+## Automation Scripts
+
+All automation scripts are located in `scripts/` and are designed to be **idempotent** (safe to run multiple times).
+
+### Script Overview
+
+| Script | Purpose | Idempotent |
+|--------|---------|------------|
+| `preflight-check.sh` | Validates environment before deployment | ✓ |
+| `build.sh` | Builds images, pulls models, initializes database | ✓ |
+| `deploy.sh` | Deploys all services with health checks | ✓ |
+| `model-pull.sh` | Manages Ollama model downloads | ✓ |
+| `model-prune.sh` | Cleans up unused models | ✓ |
+| `check-health.sh` | Waits for service health checks | ✓ |
+| `teardown.sh` | Complete cleanup of containers and volumes | ✓ |
+
+### Preflight Checks
+
+Run before deployment to validate your environment:
+
+```bash
+./scripts/preflight-check.sh
+```
+
+**What it checks:**
+- Docker and Docker Compose installation
+- Docker daemon status
+- Environment file (`.env`) existence and validity
+- Required environment variables (PASSWORD, OLLAMA_BASE_URL, CHROMA_DB_DIR)
+- Password strength (warns if < 8 characters)
+- GPU detection and nvidia-docker configuration
+- Required project files
+- Available disk space (warns if < 10GB)
+
+**Auto-fixes:**
+- Creates `.env` from `.env.example` if missing
+- Provides actionable error messages for all failures
+
+### Build Script
+
+Builds the application and prepares all dependencies:
+
+```bash
+./scripts/build.sh
+```
+
+**What it does:**
+- Runs preflight checks
+- Builds Docker images
+- Starts Ollama service if not running
+- Pulls required models (skips if already present)
+- Initializes Chroma DB (skips if already exists)
+
+**Idempotency features:**
+- Detects running services before starting
+- Skips model pull if model exists
+- Skips database initialization if database exists
+- Safe to run multiple times
+
+### Deploy Script
+
+Deploys all services with health verification:
+
+```bash
+# Default: detached mode (background)
+./scripts/deploy.sh
+
+# Attached mode (see logs)
+./scripts/deploy.sh attached
+
+# Skip build for faster restarts
+./scripts/deploy.sh skip-build
+```
+
+**What it does:**
+- Runs build script (unless `skip-build` specified)
+- Starts all services via docker-compose
+- Waits for health checks (120s timeout)
+- Displays access URLs and helpful commands
+
+**Advanced usage:**
+- Use `skip-build` to restart without rebuilding (much faster)
+- Health checks ensure services are ready before completing
+
+### Health Check Script
+
+Waits for services to become healthy:
+
+```bash
+# Check all services (120s timeout)
+./scripts/check-health.sh 120
+
+# Check specific service (60s timeout)
+./scripts/check-health.sh 60 ollama
+```
+
+**Supported services:**
+- `ollama` - Port 11434
+- `langflow` - Port 7860
+- `app` - Port 8000
+- `all` - All services (default)
+
+### Teardown Script
+
+Complete cleanup with safety confirmation:
+
+```bash
+# Interactive (asks for confirmation)
+./scripts/teardown.sh
+
+# Force mode (skip confirmation)
+./scripts/teardown.sh --force
+```
+
+**What it does:**
+- Stops all running services
+- Removes containers and networks
+- Deletes volumes (ollama_data, chroma_db)
+- Prunes unused Docker resources
+
+**⚠️ Warning:** This deletes all data including models and embeddings!
 
 ## GPU Support
 
