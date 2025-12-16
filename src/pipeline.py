@@ -31,10 +31,14 @@ from src.constants import (
     MS_PER_SECOND,
     PROMPT_PREVIEW_LENGTH,
 )
+from services.review_orchestrator.security.prompt_sanitizer import PromptSanitizer
 
 
 # Module logger - configuration should be done by the application, not the library
 logger = logging.getLogger(__name__)
+
+# Module-level sanitizer singleton for efficient pattern reuse
+_sanitizer = PromptSanitizer()
 
 
 def _configure_logging() -> None:
@@ -198,6 +202,25 @@ def run_pipeline(
         PipelineError: For any pipeline execution failures
     """
     start_time = time.time()
+
+    # Step 0: Sanitize user input to prevent prompt injection attacks
+    # Use module-level singleton for efficient pattern reuse
+    try:
+        original_prompt = prompt
+        prompt = _sanitizer.sanitize(prompt)
+        # Log at debug level only - avoid exposing security filtering to potential attackers
+        if prompt != original_prompt:
+            logger.debug("Input sanitization applied modifications")
+        else:
+            logger.debug("Input sanitization completed")
+    except ValueError as e:
+        logger.error(f"Input validation failed: {e}")
+        duration_ms = _calculate_duration_ms(start_time)
+        return PipelineResult(
+            success=False,
+            error=f"Input validation error: {e}",
+            duration_ms=duration_ms,
+        )
 
     # Default to fixture client for testing
     if client is None:

@@ -319,6 +319,60 @@ pytest tests/test_pipeline.py::TestPipelineSuccess -v
 
 All tests run in fixture mode without requiring live Ollama, making them fast and deterministic for CI/CD.
 
+## Security
+
+### Prompt Injection Prevention
+
+Codemate Hub includes built-in protection against prompt injection attacks through the `PromptSanitizer` module:
+
+**Protected Patterns:**
+- `ignore previous instructions` - Prevents instruction override attempts
+- `system:` - Blocks system prompt injection
+- `<|im_start|>` and `<|im_end|>` - Filters special control tokens
+- `[INST]` and `[/INST]` - Removes instruction wrapper tags (individually for robust nested tag handling)
+
+**Features:**
+- **Input Length Validation**: Enforces maximum input length (8192 chars) to prevent resource exhaustion
+- **Whitespace Normalization**: Removes excessive whitespace while preserving readability
+- **Case-Insensitive Matching**: Detects patterns regardless of capitalization
+- **Robust Tag Removal**: Handles nested, malformed, and multiple tag occurrences correctly
+- **Pre-compiled Patterns**: Optimized performance with compiled regex patterns
+- **Early Exit**: Fast-path for empty inputs
+
+**Integration:**
+
+The sanitizer is automatically applied in:
+1. **Pipeline (`src/pipeline.py`)**: All user prompts are sanitized before LLM processing
+2. **API (`src/app.py`)**: REST endpoint `/api/sanitize` for explicit sanitization
+
+**Testing:**
+
+```bash
+# Run security tests
+pytest tests/test_prompt_sanitizer.py -v
+
+# Test pipeline integration
+pytest tests/test_pipeline.py::TestPromptSanitization -v
+```
+
+**Usage Example:**
+
+```python
+from services.review_orchestrator.security.prompt_sanitizer import PromptSanitizer
+
+sanitizer = PromptSanitizer()
+
+# Sanitize user input
+clean_input = sanitizer.sanitize(user_prompt)
+
+# Handles validation errors
+try:
+    result = sanitizer.sanitize(potentially_dangerous_input)
+except ValueError as e:
+    # Input exceeded maximum length
+    print(f"Validation error: {e}")
+```
+
 ### Accessing Application Container
 
 ```bash
