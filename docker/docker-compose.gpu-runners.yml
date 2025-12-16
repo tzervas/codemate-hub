@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  gpu-resource-manager:
+    build: 
+      context: ../
+      dockerfile: services/gpu-resource-manager/Dockerfile
+    image: ghcr.io/embeddenator/gpu-resource-manager:latest
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu, compute, utility]
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - GPU_ALLOCATION_MODE=dynamic
+      - MIN_VRAM_MB=2048
+      - MAX_VRAM_MB=16384
+      - CONFIG_PATH=/config/strategy.yaml
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ../config/gpu-resource-strategy.yaml:/config/strategy.yaml:ro
+    networks:
+      - ci-network
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: ["CMD", "/app/gpu-resource-manager", "health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  gpu-runner-template:
+    image: ghcr.io/embeddenator/gpu-runner:latest
+    deploy:
+      replicas: 0  # Managed dynamically by gpu-resource-manager
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              capabilities: [gpu, compute]
+    environment:
+      - VRAM_REQUEST_MB=${DYNAMIC_VRAM_ALLOCATION}
+      - RESOURCE_MODE=on_demand
+      - WARM_STATE_ENABLED=true
+    labels:
+      - "gpu.allocation.dynamic=true"
+      - "gpu.scaling.enabled=true"
+    networks:
+      - ci-network
+    security_opt:
+      - apparmor=gpu-runner
+      - seccomp=/etc/docker/seccomp/gpu-runner.json
+      - no-new-privileges:true
+
+networks:
+  ci-network:
+    external: true
