@@ -180,6 +180,50 @@ docker-compose logs -f app
 docker exec app python src/pipeline.py
 ```
 
+### Enclave Execution
+
+The Zephyr enclave system provides isolated execution environments for code analysis and transformation tasks.
+
+#### Run Enclave Demo
+
+```bash
+docker exec -it coding-assistant python zephyr/demo_enclave.py
+```
+
+#### Using Enclaves in Code
+
+```python
+from src.enclave_tool import EnclaveTool
+
+# Create an enclave with resource limits
+tool = EnclaveTool()
+enclave_id = tool.create_enclave(
+    objective="Analyze code for security",
+    max_memory_mb=512,
+    max_cpu_percent=50,
+    timeout_seconds=30,
+    allowed_read_paths=["/app/src"],
+    allowed_write_paths=["/tmp/analysis"]
+)
+
+# Execute code in the enclave
+result = tool.run_in_enclave(
+    enclave_id=enclave_id,
+    target_function="analyze_code",
+    module_path="zephyr.examples.code_analyzer",
+    args={"code_file": "/app/src/pipeline.py"}
+)
+
+print(f"Analysis: {result.output}")
+print(f"Memory used: {result.memory_used_mb:.2f}MB")
+print(f"Execution time: {result.execution_time_ms:.2f}ms")
+
+# Cleanup
+tool.cleanup_enclave(enclave_id)
+```
+
+For more details, see [zephyr/README.md](zephyr/README.md).
+
 ### Stop Services
 
 ```bash
