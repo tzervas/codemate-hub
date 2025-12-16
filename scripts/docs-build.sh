@@ -65,13 +65,14 @@ validate_docs() {
     local todo_count=$(grep -r "TODO" docs/ | wc -l)
     echo -e "${INFO}   Found ${todo_count} TODO markers (expected for stub setup)${NC}"
     
-    # Validate mkdocs.yml syntax
+    # Validate mkdocs.yml syntax (using mkdocs itself for validation)
     echo -e "${INFO}   Validating mkdocs.yml...${NC}"
-    if python -c "import yaml; yaml.safe_load(open('mkdocs.yml'))" 2>/dev/null; then
-        echo -e "${SUCCESS}   ✅ mkdocs.yml is valid YAML${NC}"
-    else
-        echo -e "${ERROR}   ❌ mkdocs.yml has syntax errors${NC}"
+    if mkdocs build --strict --site-dir /tmp/mkdocs-test 2>&1 | grep -q "ERROR"; then
+        echo -e "${ERROR}   ❌ mkdocs.yml has errors${NC}"
         ((errors++))
+    else
+        echo -e "${SUCCESS}   ✅ mkdocs.yml is valid${NC}"
+        rm -rf /tmp/mkdocs-test
     fi
     
     # Check that all nav files exist

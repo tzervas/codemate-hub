@@ -1,52 +1,34 @@
 # Pipeline API Reference
 
-!!! info "Auto-Generated Documentation"
-    This page uses automated API documentation extraction from Python docstrings.
-
-## Pipeline Module
-
-::: src.pipeline
-    options:
-      show_source: true
-      heading_level: 3
+!!! info "TODO"
+    This page will contain auto-generated API documentation once the pipeline module is enhanced with comprehensive docstrings.
 
 ## Overview
 
 The pipeline module orchestrates the main execution flow for the coding assistant, coordinating between agents, tasks, and the LLM inference layer.
 
-## Key Components
+## Current Implementation
 
-### CodingPipeline Class
+The current pipeline implementation can be found in `src/pipeline.py`.
 
-The main orchestrator for coding tasks, managing:
+## Planned API Documentation
 
-- Task execution flow
-- Agent coordination
-- Memory system integration
-- Error handling and recovery
+Once comprehensive docstrings are added, this page will include:
 
-### Ollama Integration
+- **CodingPipeline Class** - Main orchestrator for coding tasks
+- **Ollama Integration** - Model inference and embedding generation
+- **Error Handling** - Recovery strategies and error propagation
+- **Configuration** - Pipeline configuration options
 
-Interfaces with the Ollama service for:
+## Temporary Reference
 
-- Model inference
-- Embedding generation
-- Response streaming
+See [src/pipeline.py](https://github.com/tzervas/codemate-hub/blob/main/src/pipeline.py) for the current implementation.
 
 ## Usage Examples
 
-```python
-from src.pipeline import CodingPipeline
-
-# Initialize pipeline
-pipeline = CodingPipeline()
-
-# Execute a coding task
-result = pipeline.run_task("Implement a binary search function in Python")
-```
-
-!!! note "TODO: Expand Examples"
-    Additional usage examples will be added covering:
+!!! note "TODO"
+    Usage examples will be added covering:
+    - Basic pipeline initialization
     - Custom agent configuration
     - Memory context injection
     - Error handling patterns

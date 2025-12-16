@@ -1,33 +1,24 @@
 # Task Manager API Reference
 
-!!! info "Auto-Generated Documentation"
-    This page uses automated API documentation extraction from Python docstrings.
-
-## Task Manager Module
-
-::: src.task_manager
-    options:
-      show_source: true
-      heading_level: 3
+!!! info "TODO"
+    This page will contain auto-generated API documentation once the task manager module is implemented.
 
 ## Overview
 
-The task manager handles task creation, state tracking, and lifecycle management.
+The task manager will handle task creation, state tracking, and lifecycle management.
 
-## Key Components
+## Planned Implementation
 
-### TaskManager Class
+The task manager module will include:
 
-Manages tasks through:
+- **TaskManager Class** - Managing task lifecycle and state transitions
+- **Task States** - Defined states for task progression
+- **Dependency Tracking** - Task dependency management
+- **Priority Management** - Task prioritization and scheduling
 
-- State transitions
-- Dependency tracking
-- Priority management
-- Cancellation handling
+## Task States
 
-### Task States
-
-Tasks progress through defined states:
+Tasks will progress through defined states:
 
 1. **PENDING** - Created but not started
 2. **RUNNING** - Currently executing
@@ -35,28 +26,22 @@ Tasks progress through defined states:
 4. **FAILED** - Execution failed
 5. **CANCELLED** - Manually cancelled
 
+## Related Components
+
+- [Orchestrator](orchestrator.md) - Task scheduling and coordination
+- [Signal System](../architecture/signal-system.md) - Event-driven task lifecycle
+
+## Temporary Reference
+
+See [trackers/SPEC.md](https://github.com/tzervas/codemate-hub/blob/main/trackers/SPEC.md) for task management specifications.
+
 ## Usage Examples
 
-```python
-from src.task_manager import TaskManager, Task
-
-# Initialize manager
-manager = TaskManager()
-
-# Create task
-task = Task(
-    name="refactor_module",
-    priority=1,
-    dependencies=["tests_pass"]
-)
-
-# Register task
-manager.register_task(task)
-```
-
-!!! note "TODO: Expand Documentation"
-    Future additions will cover:
+!!! note "TODO"
+    Once implemented, this page will include examples for:
+    - Task creation and registration
+    - State transitions and callbacks
+    - Dependency management
     - Task retry mechanisms
     - Timeout handling
-    - Progress callbacks
-    - Task persistence
+    - Progress tracking

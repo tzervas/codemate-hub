@@ -1,42 +1,23 @@
 # Agents API Reference
 
-!!! info "Auto-Generated Documentation"
-    This page uses automated API documentation extraction from Python docstrings.
-
-## Agents Module
-
-::: src.agents
-    options:
-      show_source: true
-      heading_level: 3
+!!! info "TODO"
+    This page will contain auto-generated API documentation once the agents module is implemented.
 
 ## Overview
 
-The agents module provides the agent abstraction layer, managing agent creation, lifecycle, and persona-based configuration.
+The agents module will provide the agent abstraction layer, managing agent creation, lifecycle, and persona-based configuration.
 
-## Key Components
+## Planned Implementation
 
-### AgentPool Class
+Based on the project architecture, the agents module will include:
 
-Manages multiple agents with:
-
-- Role-based selection
-- Agent lifecycle management
-- Resource allocation
-- Load balancing
-
-### Agent Creation
-
-```python
-from src.agents import create_agent_from_persona
-
-# Create agent from persona configuration
-agent = create_agent_from_persona("python_worker")
-```
+- **AgentPool Class** - Managing multiple agents with role-based selection
+- **Agent Creation** - Factory methods for creating agents from personas
+- **Persona Integration** - Loading agent configuration from `personas.yaml`
 
 ## Persona Configuration
 
-Agents are configured via `personas.yaml`:
+Agents will be configured via `personas.yaml`:
 
 ```yaml
 python_worker:
@@ -44,11 +25,26 @@ python_worker:
   goal: "Write high-quality Python code"
   backstory: "Expert Python developer..."
   preseed_query: "Python best practices"
+
+rust_worker:
+  role: "Rust Developer"
+  goal: "Write safe, efficient Rust code"
+  backstory: "Systems programming expert..."
+  preseed_query: "Rust best practices"
 ```
 
-!!! note "TODO: Expand Documentation"
-    Additional documentation will include:
-    - Custom persona creation guide
+See [personas.yaml](https://github.com/tzervas/codemate-hub/blob/main/personas.yaml) for the current persona definitions.
+
+## Temporary Reference
+
+The persona system is documented in the main [README.md](https://github.com/tzervas/codemate-hub/blob/main/README.md).
+
+## Usage Examples
+
+!!! note "TODO"
+    Once implemented, this page will include examples for:
+    - Creating agents from personas
+    - Custom persona creation
     - Agent communication patterns
     - State management
     - Performance optimization

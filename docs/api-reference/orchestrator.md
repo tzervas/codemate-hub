@@ -1,47 +1,36 @@
 # Orchestrator API Reference
 
-!!! info "Auto-Generated Documentation"
-    This page uses automated API documentation extraction from Python docstrings.
-
-## Orchestrator Module
-
-::: src.orchestrator
-    options:
-      show_source: true
-      heading_level: 3
+!!! info "TODO"
+    This page will contain auto-generated API documentation once the orchestrator module is implemented.
 
 ## Overview
 
-The orchestrator module manages task scheduling, execution, and coordination across multiple agents using a signal-based architecture.
+The orchestrator module will manage task scheduling, execution, and coordination across multiple agents using a signal-based architecture.
 
-## Key Components
+## Planned Implementation
 
-### TaskOrchestrator Class
+Based on the project tracker, the orchestrator will be located in `src/orchestrator.py` and will include:
 
-Central coordinator for:
+- **TaskOrchestrator Class** - Central coordinator for task scheduling and execution
+- **Signal-Based Coordination** - Event-driven task management
+- **Dependency Resolution** - Automatic dependency graph handling
+- **Parallel Execution** - Concurrent task execution with configurable limits
 
-- Task scheduling and prioritization
-- Dependency resolution
-- Parallel execution management
-- Signal-based event handling
+## Related Modules
+
+- [Task Manager](task-manager.md) - Task lifecycle management
+- [Agents](agents.md) - Agent pool and selection
+- [Signal System](../architecture/signal-system.md) - Event-driven coordination
+
+## Temporary Reference
+
+See [trackers/OVERVIEW.md](https://github.com/tzervas/codemate-hub/blob/main/trackers/OVERVIEW.md) for architectural planning.
 
 ## Usage Examples
 
-```python
-from src.orchestrator import TaskOrchestrator
-
-# Initialize orchestrator
-orchestrator = TaskOrchestrator()
-
-# Schedule tasks
-task_id = orchestrator.schedule_task(
-    name="code_review",
-    dependencies=["build", "test"]
-)
-```
-
-!!! note "TODO: Expand Examples"
-    Additional examples will cover:
+!!! note "TODO"
+    Once implemented, this page will include examples covering:
+    - Task scheduling and prioritization
     - Parallel task execution
     - Custom task dependencies
     - Error recovery strategies
