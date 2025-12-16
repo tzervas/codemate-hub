@@ -31,6 +31,7 @@ from src.constants import (
     MS_PER_SECOND,
     PROMPT_PREVIEW_LENGTH,
 )
+from services.review_orchestrator.security.prompt_sanitizer import PromptSanitizer
 
 
 # Module logger - configuration should be done by the application, not the library
@@ -198,6 +199,20 @@ def run_pipeline(
         PipelineError: For any pipeline execution failures
     """
     start_time = time.time()
+
+    # Step 0: Sanitize user input to prevent prompt injection attacks
+    sanitizer = PromptSanitizer()
+    try:
+        prompt = sanitizer.sanitize(prompt)
+        logger.info("✓ Input sanitized successfully")
+    except ValueError as e:
+        logger.error(f"Input validation failed: {e}")
+        duration_ms = _calculate_duration_ms(start_time)
+        return PipelineResult(
+            success=False,
+            error=f"Input validation error: {e}",
+            duration_ms=duration_ms,
+        )
 
     # Default to fixture client for testing
     if client is None:
