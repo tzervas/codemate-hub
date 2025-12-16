@@ -19,6 +19,7 @@ from src.pipeline import (
     MalformedFixtureClient,
 )
 from src.constants import DEFAULT_MODEL
+from services.review_orchestrator.security.prompt_sanitizer import PromptSanitizer
 
 
 @pytest.fixture
@@ -453,8 +454,6 @@ class TestPromptSanitization:
 
     def test_input_too_long_rejected(self, fixture_client):
         """Test that overly long input is rejected."""
-        from services.review_orchestrator.security.prompt_sanitizer import PromptSanitizer
-        
         # Create input that exceeds max length
         long_prompt = "x" * (PromptSanitizer.MAX_INPUT_LENGTH + 1)
         result = run_pipeline(long_prompt, client=fixture_client)

@@ -37,6 +37,9 @@ from services.review_orchestrator.security.prompt_sanitizer import PromptSanitiz
 # Module logger - configuration should be done by the application, not the library
 logger = logging.getLogger(__name__)
 
+# Module-level sanitizer singleton for efficient pattern reuse
+_sanitizer = PromptSanitizer()
+
 
 def _configure_logging() -> None:
     """Configure logging for standalone execution.
@@ -201,9 +204,9 @@ def run_pipeline(
     start_time = time.time()
 
     # Step 0: Sanitize user input to prevent prompt injection attacks
-    sanitizer = PromptSanitizer()
+    # Use module-level singleton for efficient pattern reuse
     try:
-        prompt = sanitizer.sanitize(prompt)
+        prompt = _sanitizer.sanitize(prompt)
         logger.info("✓ Input sanitized successfully")
     except ValueError as e:
         logger.error(f"Input validation failed: {e}")
