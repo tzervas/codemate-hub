@@ -18,7 +18,8 @@ class PromptSanitizer:
         r"system\s*:\s*",
         r"<\|im_start\|>",
         r"<\|im_end\|>",
-        r"\[INST\].*?\[/INST\]",
+        r"\[INST\]",  # Remove opening instruction tags
+        r"\[/INST\]",  # Remove closing instruction tags
     ]
 
     MAX_INPUT_LENGTH = 8192

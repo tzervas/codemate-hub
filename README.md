@@ -329,13 +329,13 @@ Codemate Hub includes built-in protection against prompt injection attacks throu
 - `ignore previous instructions` - Prevents instruction override attempts
 - `system:` - Blocks system prompt injection
 - `<|im_start|>` and `<|im_end|>` - Filters special control tokens
-- `[INST]...[/INST]` - Removes instruction wrapper tags
+- `[INST]` and `[/INST]` - Removes instruction wrapper tags (individually for robust nested tag handling)
 
 **Features:**
 - **Input Length Validation**: Enforces maximum input length (8192 chars) to prevent resource exhaustion
 - **Whitespace Normalization**: Removes excessive whitespace while preserving readability
 - **Case-Insensitive Matching**: Detects patterns regardless of capitalization
-- **Non-greedy Regex**: Efficiently handles multiple pattern occurrences
+- **Robust Tag Removal**: Handles nested, malformed, and multiple tag occurrences correctly
 - **Pre-compiled Patterns**: Optimized performance with compiled regex patterns
 - **Early Exit**: Fast-path for empty inputs
 
