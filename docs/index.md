@@ -37,7 +37,7 @@ Codemate Hub is a Dockerized agentic coding assistant that combines:
 
     Detailed API documentation for all components
 
-    [:octicons-arrow-right-24: API Docs](api-reference/pipeline.md)
+    [:octicons-arrow-right-24: API Docs](api-reference/index.md)
 
 -   :material-tools:{ .lg .middle } __Development__
 

@@ -42,6 +42,8 @@ MkDocs Material and mkdocstrings. To regenerate:
 We use Google-style docstrings for all Python code:
 
 ```python
+from typing import Any
+
 def example_function(param: str, count: int = 0) -> dict[str, Any]:
     """Brief description of the function.
 
@@ -71,15 +73,14 @@ def example_function(param: str, count: int = 0) -> dict[str, Any]:
 All public APIs must include type hints:
 
 ```python
-from typing import Optional, List, Dict, Any
+from typing import Optional, Any
 
 def process_items(
-    items: List[str],
-    config: Optional[Dict[str, Any]] = None
-) -> Dict[str, List[str]]:
+    items: list[str],
+    config: Optional[dict[str, Any]] = None
+) -> dict[str, list[str]]:
     """Process a list of items with optional configuration."""
-    # Implementation
-    pass
+    ...
 ```
 
 ### Usage Examples

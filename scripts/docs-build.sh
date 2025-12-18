@@ -27,7 +27,11 @@ cd "$PROJECT_ROOT"
 check_mkdocs() {
     if ! command -v mkdocs &> /dev/null; then
         echo -e "${WARN}⚠️  MkDocs not found. Installing...${NC}"
-        pip install -q mkdocs mkdocs-material mkdocstrings[python] pymdown-extensions
+        if ! pip install mkdocs mkdocs-material mkdocstrings[python] pymdown-extensions; then
+            echo -e "${ERROR}❌ Failed to install MkDocs dependencies${NC}"
+            echo -e "${INFO}   Please check your network connection and try again${NC}"
+            exit 1
+        fi
     fi
 }
 
@@ -78,6 +82,8 @@ validate_docs() {
     # Check that all nav files exist
     echo -e "${INFO}   Checking navigation files...${NC}"
     local missing=0
+    # Complex one-liner for extracting navigation files from YAML structure
+    # This recursively extracts all markdown file paths from the nested navigation dict/list
     while IFS= read -r file; do
         if [[ ! -f "docs/$file" ]]; then
             echo -e "${ERROR}   ❌ Missing: docs/$file${NC}"

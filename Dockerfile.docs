@@ -9,7 +9,7 @@ WORKDIR /docs
 # Install MkDocs and required plugins
 RUN pip install --no-cache-dir \
     mkdocs==1.6.0 \
-    mkdocs-material==9.5.39 \
+    mkdocs-material==9.5.50 \
     mkdocstrings[python]==0.26.1 \
     pymdown-extensions==10.11.2
 
@@ -23,6 +23,9 @@ COPY src/ /docs/src/
 # Expose documentation server port
 EXPOSE 8001
 
-# Serve documentation with auto-reload
-# In production, use: mkdocs build && python -m http.server 8001 -d site
+# Serve documentation
+# Development mode (with auto-reload): mkdocs serve --dev-addr=0.0.0.0:8001
+# Production mode (static site): mkdocs build && python -m http.server 8001 -d site --bind 0.0.0.0
+# Note: Development server exposes all interfaces for Docker networking. 
+#       In production, consider using a reverse proxy with proper access controls.
 CMD ["mkdocs", "serve", "--dev-addr=0.0.0.0:8001"]

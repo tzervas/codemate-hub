@@ -31,7 +31,7 @@ generate_module_doc() {
     local doc_file="$DOCS_API_DIR/${module_name}.md"
     
     # Skip if module already has custom documentation
-    if [[ -f "$doc_file" ]] && grep -q "Auto-Generated Documentation" "$doc_file" 2>/dev/null; then
+    if [[ -f "$doc_file" ]] && grep -q "Auto-Generated" "$doc_file" 2>/dev/null; then
         echo -e "${INFO}  ℹ️  Skipping $module_name (custom documentation exists)${NC}"
         return
     fi
@@ -40,11 +40,16 @@ generate_module_doc() {
     
     # Extract module docstring if it exists
     local module_doc=""
-    if python3 -c "import sys; sys.path.insert(0, '$SRC_DIR'); import $module_name; print($module_name.__doc__ if $module_name.__doc__ else 'No description available')" 2>/dev/null; then
-        module_doc=$(python3 -c "import sys; sys.path.insert(0, '$SRC_DIR'); import $module_name; print($module_name.__doc__ if $module_name.__doc__ else 'No description available')" 2>/dev/null || echo "No description available")
-    else
-        module_doc="No description available"
-    fi
+    # Use python with proper argument passing to avoid shell injection
+    module_doc=$(python3 -c "
+import sys
+sys.path.insert(0, sys.argv[1])
+try:
+    mod = __import__(sys.argv[2])
+    print(mod.__doc__ if mod.__doc__ else 'No description available')
+except Exception:
+    print('No description available')
+" "$SRC_DIR" "$module_name" 2>/dev/null || echo "No description available")
     
     # Create basic documentation page
     cat > "$doc_file" << EOF
@@ -70,7 +75,7 @@ $module_doc
 ## Usage
 
 \`\`\`python
-from src.$module_name import *
+from src import $module_name
 
 # Add usage examples here
 \`\`\`

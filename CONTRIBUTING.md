@@ -333,7 +333,6 @@ docker compose build app
 - 📖 Check the [documentation](http://localhost:8001)
 - 🐛 Search [existing issues](https://github.com/tzervas/codemate-hub/issues)
 - 💬 Start a [discussion](https://github.com/tzervas/codemate-hub/discussions)
-- 📧 Contact maintainers: tz-dev@vectorweight.com
 
 ## Code of Conduct
 
