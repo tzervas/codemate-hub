@@ -3,21 +3,6 @@
   "python.defaultInterpreterPath": "/usr/local/bin/python",
   "python.languageServer": "Pylance",
   
-  // Linting with Ruff
-  "python.linting.enabled": true,
-  "python.linting.ruffEnabled": true,
-  "python.linting.ruffArgs": [
-    "--line-length=100",
-    "--select=E,F,W"
-  ],
-  
-  // Formatting with Black
-  "python.formatting.provider": "black",
-  "python.formatting.blackArgs": [
-    "--line-length=100",
-    "--target-version=py312"
-  ],
-  
   // Format on save
   "editor.formatOnSave": true,
   "[python]": {
@@ -27,6 +12,16 @@
     },
     "editor.defaultFormatter": "ms-python.black-formatter"
   },
+  
+  // Ruff extension settings
+  "ruff.lineLength": 100,
+  "ruff.lint.select": ["E", "F", "W"],
+  
+  // Black formatter extension settings
+  "black-formatter.args": [
+    "--line-length=100",
+    "--target-version=py312"
+  ],
   
   // Testing
   "python.testing.pytestEnabled": true,
