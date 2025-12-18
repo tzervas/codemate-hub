@@ -1,0 +1,127 @@
+{
+  "name": "Document Ingestion Pipeline",
+  "description": "Multi-format document ingestion with chunking and embedding into ChromaDB",
+  "version": "1.0.0",
+  "tags": ["ingestion", "embeddings", "chunking", "documents"],
+  "data": {
+    "nodes": [
+      {
+        "id": "FileLoader-1",
+        "type": "File",
+        "position": { "x": 100, "y": 200 },
+        "data": {
+          "node": {
+            "template": {
+              "path": { "value": "" },
+              "file_types": { "value": ["pdf", "txt", "md", "docx", "html", "json", "csv"] },
+              "silent_errors": { "value": false }
+            },
+            "display_name": "Document Input"
+          }
+        }
+      },
+      {
+        "id": "UnstructuredLoader-1",
+        "type": "Unstructured",
+        "position": { "x": 100, "y": 400 },
+        "data": {
+          "node": {
+            "template": {
+              "mode": { "value": "elements" },
+              "strategy": { "value": "auto" },
+              "include_metadata": { "value": true }
+            },
+            "display_name": "PDF/Doc Parser"
+          }
+        }
+      },
+      {
+        "id": "RecursiveCharacterTextSplitter-1",
+        "type": "RecursiveCharacterTextSplitter",
+        "position": { "x": 400, "y": 200 },
+        "data": {
+          "node": {
+            "template": {
+              "chunk_size": { "value": 1000 },
+              "chunk_overlap": { "value": 200 },
+              "separators": { "value": ["\n\n", "\n", ". ", " ", ""] },
+              "length_function": { "value": "len" }
+            },
+            "display_name": "Text Chunker"
+          }
+        }
+      },
+      {
+        "id": "MetadataEnricher-1",
+        "type": "CreateData",
+        "position": { "x": 700, "y": 200 },
+        "data": {
+          "node": {
+            "template": {
+              "template": {
+                "value": {
+                  "source": "{{ filename }}",
+                  "chunk_index": "{{ index }}",
+                  "ingestion_timestamp": "{{ timestamp }}",
+                  "file_type": "{{ extension }}"
+                }
+              }
+            },
+            "display_name": "Add Metadata"
+          }
+        }
+      },
+      {
+        "id": "OllamaEmbeddings-1",
+        "type": "OllamaEmbeddings",
+        "position": { "x": 700, "y": 400 },
+        "data": {
+          "node": {
+            "template": {
+              "base_url": { "value": "http://ollama:11434" },
+              "model": { "value": "nomic-embed-text" },
+              "temperature": { "value": 0.0 }
+            },
+            "display_name": "Embedding Model"
+          }
+        }
+      },
+      {
+        "id": "Chroma-1",
+        "type": "Chroma",
+        "position": { "x": 1000, "y": 300 },
+        "data": {
+          "node": {
+            "template": {
+              "collection_name": { "value": "documents" },
+              "persist_directory": { "value": "/app/chroma_db" },
+              "allow_duplicates": { "value": false }
+            },
+            "display_name": "Vector Store"
+          }
+        }
+      },
+      {
+        "id": "TextOutput-1",
+        "type": "TextOutput",
+        "position": { "x": 1300, "y": 300 },
+        "data": {
+          "node": {
+            "template": {
+              "input_value": { "value": "" }
+            },
+            "display_name": "Ingestion Status"
+          }
+        }
+      }
+    ],
+    "edges": [
+      { "source": "FileLoader-1", "target": "RecursiveCharacterTextSplitter-1", "sourceHandle": "data", "targetHandle": "text" },
+      { "source": "UnstructuredLoader-1", "target": "RecursiveCharacterTextSplitter-1", "sourceHandle": "documents", "targetHandle": "text" },
+      { "source": "RecursiveCharacterTextSplitter-1", "target": "MetadataEnricher-1", "sourceHandle": "chunks", "targetHandle": "data" },
+      { "source": "MetadataEnricher-1", "target": "Chroma-1", "sourceHandle": "data", "targetHandle": "documents" },
+      { "source": "OllamaEmbeddings-1", "target": "Chroma-1", "sourceHandle": "embeddings", "targetHandle": "embedding" },
+      { "source": "Chroma-1", "target": "TextOutput-1", "sourceHandle": "store", "targetHandle": "input_value" }
+    ]
+  }
+}

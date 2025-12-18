@@ -160,3 +160,25 @@ docker exec coding-assistant python src/pipeline.py
 1. **Start here:** [TROUBLESHOOTING.md](../TROUBLESHOOTING.md) - indexed by error type
 2. **Common errors:** Port conflicts, disk space, GPU issues, health checks
 3. **Still stuck?** Check service logs: `docker compose logs [service]`
+
+---
+
+## Enabling Copilot 'Raptor mini' in this repository
+
+If you're experimenting with GitHub Copilot's experimental Raptor mini model and want repository members to use it when working on `codemate-hub`, add the following workspace setting to `.vscode/settings.json` (this repository already recommends it):
+
+```json
+{
+	"github.copilot": {
+		"enable": true,
+		"experimental": {
+			"enableRaptorMini": true
+		}
+	}
+}
+```
+
+Note: workspace settings are applied on a per-client basis and may prompt the user to accept the workspace settings the first time they open the repository. Enabling the setting at the organization level requires admin access (see `.devcontainer/README.md` for recommended org-level steps).
+
+--
+IMPORTANT: This repo is set up so Raptor mini is requested at the workspace level, but the org-level policy should limit usage to the `vector-weight` organization and the `tzervas` personal account only; follow `docs/ENABLE_RAPTOR_MINI.md` for the admin UI steps and verification.

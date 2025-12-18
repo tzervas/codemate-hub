@@ -1,0 +1,134 @@
+{
+  "name": "Code Assistant Pipeline",
+  "description": "Specialized code generation and review assistant with context-aware responses",
+  "version": "1.0.0",
+  "tags": ["code", "assistant", "development", "review"],
+  "data": {
+    "nodes": [
+      {
+        "id": "ChatInput-1",
+        "type": "ChatInput",
+        "position": { "x": 100, "y": 200 },
+        "data": {
+          "node": {
+            "template": {
+              "input_value": { "value": "" },
+              "sender": { "value": "User" },
+              "sender_name": { "value": "Developer" },
+              "session_id": { "value": "" },
+              "should_store_message": { "value": true }
+            },
+            "display_name": "Code Request"
+          }
+        }
+      },
+      {
+        "id": "ConditionalRouter-1",
+        "type": "ConditionalRouter",
+        "position": { "x": 400, "y": 200 },
+        "data": {
+          "node": {
+            "template": {
+              "input_text": { "value": "" },
+              "match_text": { "value": "review|analyze|explain|debug" },
+              "operator": { "value": "regex" },
+              "case_sensitive": { "value": false }
+            },
+            "display_name": "Task Router"
+          }
+        }
+      },
+      {
+        "id": "Prompt-Generation",
+        "type": "Prompt",
+        "position": { "x": 700, "y": 100 },
+        "data": {
+          "node": {
+            "template": {
+              "template": {
+                "value": "You are an expert code generator. Generate clean, well-documented, production-ready code.\n\nRequirements:\n- Follow language-specific best practices and idioms\n- Include proper error handling\n- Add docstrings and comments where appropriate\n- Use type hints (for Python) or type annotations where applicable\n- Structure code for testability\n\nRequest: {request}\n\nProvide the complete implementation:"
+              }
+            },
+            "display_name": "Generation Prompt"
+          }
+        }
+      },
+      {
+        "id": "Prompt-Review",
+        "type": "Prompt",
+        "position": { "x": 700, "y": 300 },
+        "data": {
+          "node": {
+            "template": {
+              "template": {
+                "value": "You are a senior code reviewer with expertise in software architecture and best practices.\n\nAnalysis Framework:\n1. Code Quality: readability, maintainability, DRY principles\n2. Security: potential vulnerabilities, input validation\n3. Performance: algorithmic complexity, resource usage\n4. Testing: testability, edge cases\n5. Documentation: completeness, accuracy\n\nCode/Request to analyze:\n{request}\n\nProvide detailed analysis with specific recommendations:"
+              }
+            },
+            "display_name": "Review Prompt"
+          }
+        }
+      },
+      {
+        "id": "OllamaModel-1",
+        "type": "OllamaModel",
+        "position": { "x": 1000, "y": 200 },
+        "data": {
+          "node": {
+            "template": {
+              "base_url": { "value": "http://ollama:11434" },
+              "model_name": { "value": "qwen2.5-coder:7b-q4_0" },
+              "temperature": { "value": 0.2 },
+              "num_ctx": { "value": 8192 },
+              "num_predict": { "value": 2048 },
+              "system": { "value": "You are a senior software engineer specializing in clean, maintainable code." }
+            },
+            "display_name": "Code LLM"
+          }
+        }
+      },
+      {
+        "id": "Memory-1",
+        "type": "ConversationBufferMemory",
+        "position": { "x": 1000, "y": 400 },
+        "data": {
+          "node": {
+            "template": {
+              "memory_key": { "value": "chat_history" },
+              "return_messages": { "value": true },
+              "input_key": { "value": "input" },
+              "output_key": { "value": "output" }
+            },
+            "display_name": "Session Memory"
+          }
+        }
+      },
+      {
+        "id": "ChatOutput-1",
+        "type": "ChatOutput",
+        "position": { "x": 1300, "y": 200 },
+        "data": {
+          "node": {
+            "template": {
+              "input_value": { "value": "" },
+              "sender": { "value": "Machine" },
+              "sender_name": { "value": "Code Assistant" },
+              "session_id": { "value": "" },
+              "should_store_message": { "value": true }
+            },
+            "display_name": "Code Response"
+          }
+        }
+      }
+    ],
+    "edges": [
+      { "source": "ChatInput-1", "target": "ConditionalRouter-1", "sourceHandle": "message", "targetHandle": "input_text" },
+      { "source": "ConditionalRouter-1", "target": "Prompt-Generation", "sourceHandle": "false_output", "targetHandle": "request" },
+      { "source": "ConditionalRouter-1", "target": "Prompt-Review", "sourceHandle": "true_output", "targetHandle": "request" },
+      { "source": "Prompt-Generation", "target": "OllamaModel-1", "sourceHandle": "prompt", "targetHandle": "input" },
+      { "source": "Prompt-Review", "target": "OllamaModel-1", "sourceHandle": "prompt", "targetHandle": "input" },
+      { "source": "Memory-1", "target": "OllamaModel-1", "sourceHandle": "memory", "targetHandle": "memory" },
+      { "source": "OllamaModel-1", "target": "ChatOutput-1", "sourceHandle": "text", "targetHandle": "input_value" },
+      { "source": "OllamaModel-1", "target": "Memory-1", "sourceHandle": "text", "targetHandle": "output" }
+    ]
+  }
+}

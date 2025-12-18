@@ -1,0 +1,125 @@
+{
+  "version": "1.0.0",
+  "description": "Ollama model configurations optimized for different use cases",
+  "pull_on_startup": [
+    "qwen2.5-coder:7b-q4_0",
+    "nomic-embed-text",
+    "mistral:latest"
+  ],
+  "models": {
+    "code_generation": {
+      "primary": "qwen2.5-coder:7b-q4_0",
+      "fallback": "codellama:7b",
+      "parameters": {
+        "temperature": 0.2,
+        "top_p": 0.9,
+        "top_k": 40,
+        "num_ctx": 8192,
+        "num_predict": 2048,
+        "repeat_penalty": 1.1,
+        "stop": ["```", "Human:", "User:"]
+      }
+    },
+    "embeddings": {
+      "primary": "nomic-embed-text",
+      "fallback": "all-minilm",
+      "parameters": {
+        "num_ctx": 8192
+      }
+    },
+    "chat": {
+      "primary": "mistral:latest",
+      "fallback": "llama3.2:latest",
+      "parameters": {
+        "temperature": 0.7,
+        "top_p": 0.9,
+        "num_ctx": 4096,
+        "num_predict": 1024
+      }
+    },
+    "analysis": {
+      "primary": "qwen2.5-coder:7b-q4_0",
+      "parameters": {
+        "temperature": 0.1,
+        "top_p": 0.8,
+        "num_ctx": 16384,
+        "num_predict": 4096
+      }
+    },
+    "vision": {
+      "primary": "llava:7b",
+      "fallback": "bakllava:latest",
+      "parameters": {
+        "temperature": 0.5,
+        "num_ctx": 4096
+      },
+      "note": "Requires multimodal model, pull separately if needed"
+    }
+  },
+  "gpu_optimization": {
+    "rtx_5080": {
+      "description": "Optimized for RTX 5080 (16GB VRAM)",
+      "num_gpu": 1,
+      "main_gpu": 0,
+      "gpu_layers": 35,
+      "batch_size": 512,
+      "num_parallel": 4,
+      "num_thread": 8
+    },
+    "rtx_4090": {
+      "description": "Optimized for RTX 4090 (24GB VRAM)",
+      "num_gpu": 1,
+      "main_gpu": 0,
+      "gpu_layers": 50,
+      "batch_size": 1024,
+      "num_parallel": 8,
+      "num_thread": 16
+    },
+    "multi_gpu": {
+      "description": "Multi-GPU setup",
+      "num_gpu": -1,
+      "gpu_layers": -1,
+      "batch_size": 2048,
+      "num_parallel": 16
+    },
+    "cpu_only": {
+      "description": "CPU-only fallback",
+      "num_gpu": 0,
+      "num_thread": -1,
+      "batch_size": 256,
+      "num_parallel": 2
+    }
+  },
+  "memory_management": {
+    "keep_alive": "5m",
+    "num_keep": 2,
+    "flash_attention": true,
+    "low_vram": false
+  },
+  "modelfiles": {
+    "codemate-coder": {
+      "base": "qwen2.5-coder:7b-q4_0",
+      "system": "You are Codemate, an expert software engineer specializing in Python, TypeScript, Docker, and cloud infrastructure. You write clean, well-tested, production-ready code following best practices. Always include type hints, error handling, and documentation.",
+      "parameters": {
+        "temperature": 0.2,
+        "num_ctx": 8192
+      }
+    },
+    "codemate-reviewer": {
+      "base": "qwen2.5-coder:7b-q4_0",
+      "system": "You are a senior code reviewer. Analyze code for: 1) Security vulnerabilities 2) Performance issues 3) Best practice violations 4) Test coverage gaps. Provide specific, actionable feedback with examples.",
+      "parameters": {
+        "temperature": 0.1,
+        "num_ctx": 16384
+      }
+    },
+    "codemate-devops": {
+      "base": "qwen2.5-coder:7b-q4_0",
+      "system": "You are a DevOps expert specializing in Docker, Kubernetes, CI/CD, and infrastructure as code. You create idempotent, secure, and well-documented configurations. Always include health checks and proper error handling.",
+      "parameters": {
+        "temperature": 0.2,
+        "num_ctx": 8192
+      }
+    }
+  }
+}

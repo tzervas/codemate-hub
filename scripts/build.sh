@@ -10,7 +10,7 @@ echo "Running preflight checks..."
 
 echo ""
 echo "=== Building Images ==="
-docker compose -f "$PROJECT_ROOT/docker-compose.yml" build app
+docker compose -f "$PROJECT_ROOT/docker-compose.yml" build
 
 echo ""
 echo "=== Starting Ollama Service ==="

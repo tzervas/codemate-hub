@@ -1,0 +1,91 @@
+server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+
+positions:
+  filename: /tmp/positions.yaml
+
+clients:
+  - url: http://loki:3100/loki/api/v1/push
+
+scrape_configs:
+  # Docker container logs
+  - job_name: docker-containers
+    docker_sd_configs:
+      - host: unix:///var/run/docker.sock
+        refresh_interval: 5s
+    relabel_configs:
+      - source_labels: ['__meta_docker_container_name']
+        regex: '/(.*)'
+        target_label: 'container'
+      - source_labels: ['__meta_docker_container_log_stream']
+        target_label: 'stream'
+      - source_labels: ['__meta_docker_container_label_com_docker_compose_service']
+        target_label: 'compose_service'
+    pipeline_stages:
+      # Parse JSON logs
+      - json:
+          expressions:
+            level: level
+            timestamp: timestamp
+            message: message
+            trace_id: trace_id
+            span_id: span_id
+      # Extract log level
+      - labels:
+          level:
+          trace_id:
+          span_id:
+      # Parse timestamp
+      - timestamp:
+          source: timestamp
+          format: RFC3339Nano
+      # Add AI-specific labels
+      - match:
+          selector: '{compose_service="ollama"}'
+          stages:
+            - json:
+                expressions:
+                  model: model
+                  tokens: tokens
+                  latency: latency_ms
+            - labels:
+                model:
+            - metrics:
+                ollama_tokens_total:
+                  type: Counter
+                  description: "Total tokens processed"
+                  source: tokens
+                  config:
+                    action: add
+                ollama_latency_ms:
+                  type: Histogram
+                  description: "Request latency in milliseconds"
+                  source: latency
+                  config:
+                    buckets: [10, 50, 100, 500, 1000, 5000]
+      # Parse Langflow logs
+      - match:
+          selector: '{compose_service="langflow"}'
+          stages:
+            - json:
+                expressions:
+                  flow_id: flow_id
+                  node_id: node_id
+                  execution_time: execution_time
+            - labels:
+                flow_id:
+                node_id:
+      # Parse application logs
+      - match:
+          selector: '{compose_service="app"}'
+          stages:
+            - json:
+                expressions:
+                  agent: agent
+                  task: task
+                  status: status
+            - labels:
+                agent:
+                task:
+                status:
