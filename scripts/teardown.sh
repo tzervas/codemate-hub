@@ -42,7 +42,7 @@ if [ "$FORCE" = false ]; then
     log_warn "WARNING: This will stop and remove all containers and volumes."
     log_warn "Data in ollama_data and chroma_db volumes will be lost!"
     echo ""
-    read -p "Continue? (type 'yes' to confirm): " CONFIRM
+    read -r -p "Continue? (type 'yes' to confirm): " CONFIRM
 
     if [ "$CONFIRM" != "yes" ]; then
         log_info "Aborted."
