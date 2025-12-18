@@ -33,6 +33,23 @@ from src.constants import (
 )
 
 
+def select_model_for_job(profile: str) -> str:
+    """Pick a reasonable default model for a job profile.
+
+    This is a simple helper for the app to choose between small multi-agent
+    models and large single-pipeline models.
+    """
+    profile_map = {
+        "multi-agent": "qwen2.5-coder:7b-q4_0",
+        "chat": "neural-chat:latest",
+        "heavy": "llama2-13b",  # app can append quantization tag if needed
+    }
+    return profile_map.get(profile, DEFAULT_MODEL)
+
+
+# NOTE: run_pipeline_with_profile has been moved to the end of the file (below) to avoid forward reference issues
+
+
 # Module logger - configuration should be done by the application, not the library
 logger = logging.getLogger(__name__)
 
@@ -170,8 +187,13 @@ class MalformedFixtureClient(FixtureClient):
 
 
 def _calculate_duration_ms(start_time: float) -> float:
-    """Calculate duration in milliseconds from start time."""
-    return (time.time() - start_time) * MS_PER_SECOND
+    """Calculate duration in milliseconds from start time using a high-resolution timer.
+
+    We use time.perf_counter() for higher resolution timing that is suitable for
+    short duration measurements and testing where time.time() may have insufficient
+    resolution leading to 0.0 results on very fast operations.
+    """
+    return (time.perf_counter() - start_time) * MS_PER_SECOND
 
 
 def run_pipeline(
@@ -197,7 +219,8 @@ def run_pipeline(
     Raises:
         PipelineError: For any pipeline execution failures
     """
-    start_time = time.time()
+    # Use a high-resolution monotonic counter for duration measurements
+    start_time = time.perf_counter()
 
     # Default to fixture client for testing
     if client is None:
@@ -217,9 +240,7 @@ def run_pipeline(
     log_prompt_content = os.getenv("LOG_PROMPT_CONTENT", "").lower() in ("1", "true", "yes")
     if log_prompt_content or logger.isEnabledFor(logging.DEBUG):
         preview_len = min(PROMPT_PREVIEW_LENGTH, prompt_length)
-        prompt_preview = (
-            f"{prompt[:preview_len]}..." if prompt_length > preview_len else prompt
-        )
+        prompt_preview = f"{prompt[:preview_len]}..." if prompt_length > preview_len else prompt
         logger.debug(f"Prompt preview: {prompt_preview}")
 
     try:
@@ -296,6 +317,23 @@ def run_pipeline(
             success=False,
             error=f"Unexpected error: {e}",
             duration_ms=duration_ms,
+        )
+
+    def run_pipeline_with_profile(
+        prompt: str,
+        profile: str = "multi-agent",
+        client: Optional[OllamaClient] = None,
+        persist_embeddings: bool = False,
+        fixtures_dir: Optional[Path] = None,
+    ) -> PipelineResult:
+        """Convenience wrapper: pick model from a job profile and run the pipeline."""
+        model = select_model_for_job(profile)
+        return run_pipeline(
+            prompt,
+            model=model,
+            client=client,
+            persist_embeddings=persist_embeddings,
+            fixtures_dir=fixtures_dir,
         )
 
 

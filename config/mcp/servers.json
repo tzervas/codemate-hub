@@ -1,0 +1,186 @@
+{
+  "version": "1.0.0",
+  "description": "Model Context Protocol (MCP) server configurations for enhanced tool capabilities",
+  "servers": {
+    "filesystem": {
+      "name": "Filesystem MCP Server",
+      "description": "File system operations with sandboxed access",
+      "repository": "https://github.com/modelcontextprotocol/servers",
+      "package": "@modelcontextprotocol/server-filesystem",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "/app/workspace"],
+      "env": {},
+      "capabilities": ["read", "write", "list", "search"],
+      "allowed_paths": [
+        "/app/workspace",
+        "/app/src",
+        "/app/insights"
+      ],
+      "enabled": true
+    },
+    "github": {
+      "name": "GitHub MCP Server",
+      "description": "GitHub API integration for repository operations",
+      "repository": "https://github.com/modelcontextprotocol/servers",
+      "package": "@modelcontextprotocol/server-github",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_TOKEN}"
+      },
+      "capabilities": ["repos", "issues", "pulls", "actions", "search"],
+      "enabled": true
+    },
+    "postgres": {
+      "name": "PostgreSQL MCP Server",
+      "description": "PostgreSQL database operations",
+      "repository": "https://github.com/modelcontextprotocol/servers",
+      "package": "@modelcontextprotocol/server-postgres",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-postgres"],
+      "env": {
+        "POSTGRES_CONNECTION_STRING": "${DATABASE_URL}"
+      },
+      "capabilities": ["query", "schema", "tables"],
+      "enabled": false,
+      "note": "Enable when PostgreSQL is added to the stack"
+    },
+    "memory": {
+      "name": "Memory MCP Server",
+      "description": "Persistent key-value memory storage",
+      "repository": "https://github.com/modelcontextprotocol/servers",
+      "package": "@modelcontextprotocol/server-memory",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-memory"],
+      "env": {},
+      "capabilities": ["store", "retrieve", "delete", "list"],
+      "enabled": true
+    },
+    "brave-search": {
+      "name": "Brave Search MCP Server",
+      "description": "Web search via Brave Search API",
+      "repository": "https://github.com/modelcontextprotocol/servers",
+      "package": "@modelcontextprotocol/server-brave-search",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-brave-search"],
+      "env": {
+        "BRAVE_API_KEY": "${BRAVE_API_KEY}"
+      },
+      "capabilities": ["web_search", "news_search"],
+      "enabled": false,
+      "note": "Requires Brave Search API key"
+    },
+    "fetch": {
+      "name": "Fetch MCP Server",
+      "description": "HTTP fetch operations for web content",
+      "repository": "https://github.com/modelcontextprotocol/servers",
+      "package": "@modelcontextprotocol/server-fetch",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-fetch"],
+      "env": {},
+      "capabilities": ["fetch_url", "fetch_html", "fetch_json"],
+      "enabled": true
+    },
+    "puppeteer": {
+      "name": "Puppeteer MCP Server",
+      "description": "Browser automation and web scraping",
+      "repository": "https://github.com/modelcontextprotocol/servers",
+      "package": "@modelcontextprotocol/server-puppeteer",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-puppeteer"],
+      "env": {},
+      "capabilities": ["navigate", "screenshot", "click", "type", "evaluate"],
+      "enabled": false,
+      "note": "Requires Chromium/headless browser setup"
+    },
+    "sqlite": {
+      "name": "SQLite MCP Server",
+      "description": "SQLite database operations",
+      "repository": "https://github.com/modelcontextprotocol/servers",
+      "package": "@modelcontextprotocol/server-sqlite",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-sqlite", "/app/data/assistant.db"],
+      "env": {},
+      "capabilities": ["query", "execute", "schema"],
+      "enabled": true
+    },
+    "sequential-thinking": {
+      "name": "Sequential Thinking MCP Server",
+      "description": "Enhanced reasoning with chain-of-thought",
+      "repository": "https://github.com/modelcontextprotocol/servers",
+      "package": "@modelcontextprotocol/server-sequential-thinking",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"],
+      "env": {},
+      "capabilities": ["think_step_by_step", "analyze", "synthesize"],
+      "enabled": true
+    }
+  },
+  "custom_tools": {
+    "code_executor": {
+      "name": "Code Executor",
+      "description": "Sandboxed code execution for Python, JavaScript, Bash",
+      "type": "python",
+      "module": "src.tools.code_executor",
+      "class": "CodeExecutorTool",
+      "config": {
+        "sandbox": true,
+        "timeout_seconds": 30,
+        "max_memory_mb": 512,
+        "allowed_languages": ["python", "javascript", "bash"]
+      },
+      "enabled": true
+    },
+    "document_processor": {
+      "name": "Document Processor",
+      "description": "Process and chunk documents for RAG",
+      "type": "python",
+      "module": "src.tools.document_processor",
+      "class": "DocumentProcessorTool",
+      "config": {
+        "chunk_size": 1000,
+        "chunk_overlap": 200,
+        "supported_formats": ["pdf", "docx", "txt", "md", "html", "csv", "json"]
+      },
+      "enabled": true
+    },
+    "vector_search": {
+      "name": "Vector Search",
+      "description": "Semantic search in ChromaDB",
+      "type": "python",
+      "module": "src.tools.vector_search",
+      "class": "VectorSearchTool",
+      "config": {
+        "collection_name": "documents",
+        "top_k": 5,
+        "relevance_threshold": 0.7
+      },
+      "enabled": true
+    },
+    "git_operations": {
+      "name": "Git Operations",
+      "description": "Git repository operations",
+      "type": "python",
+      "module": "src.tools.git_ops",
+      "class": "GitOperationsTool",
+      "config": {
+        "allowed_operations": ["status", "diff", "log", "branch", "commit", "push", "pull"]
+      },
+      "enabled": true
+    }
+  },
+  "tool_groups": {
+    "development": {
+      "description": "Tools for software development",
+      "tools": ["filesystem", "github", "code_executor", "git_operations"]
+    },
+    "research": {
+      "description": "Tools for research and information gathering",
+      "tools": ["fetch", "brave-search", "vector_search", "sequential-thinking"]
+    },
+    "data": {
+      "description": "Tools for data processing",
+      "tools": ["sqlite", "postgres", "document_processor", "vector_search"]
+    }
+  }
+}

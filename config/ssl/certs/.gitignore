@@ -1,0 +1,16 @@
+# Ignore all key files (security)
+*.key
+*.pem
+*.pfx
+*.p12
+
+# Ignore generated certificates (recreate locally)
+*.crt
+*.csr
+*.srl
+
+# Ignore openssl config (generated)
+openssl.cnf
+
+# Keep README
+!README.md
