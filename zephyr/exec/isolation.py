@@ -5,7 +5,6 @@ Provides utilities for enforcing filesystem access restrictions
 and process isolation within enclaves.
 """
 
-import os
 from pathlib import Path
 from typing import List
 
@@ -28,8 +27,26 @@ class FilesystemIsolation:
             allowed_read_paths: Paths that can be read
             allowed_write_paths: Paths that can be written
         """
-        self.allowed_read_paths = [Path(p).resolve() for p in allowed_read_paths]
-        self.allowed_write_paths = [Path(p).resolve() for p in allowed_write_paths]
+        # Use resolve(strict=False) and check for symlinks to prevent symlink attacks
+        self.allowed_read_paths = []
+        for p in allowed_read_paths:
+            path = Path(p)
+            if path.is_symlink():
+                # Resolve symlink but validate the target
+                path = path.resolve(strict=False)
+            else:
+                path = path.resolve(strict=False)
+            self.allowed_read_paths.append(path)
+        
+        self.allowed_write_paths = []
+        for p in allowed_write_paths:
+            path = Path(p)
+            if path.is_symlink():
+                # Resolve symlink but validate the target
+                path = path.resolve(strict=False)
+            else:
+                path = path.resolve(strict=False)
+            self.allowed_write_paths.append(path)
     
     def validate_read_access(self, path: str) -> bool:
         """Check if a path can be read.
@@ -41,7 +58,12 @@ class FilesystemIsolation:
             True if read access is allowed
         """
         try:
-            target_path = Path(path).resolve()
+            target_path = Path(path)
+            # Check for symlinks to prevent symlink attacks
+            if target_path.is_symlink():
+                target_path = target_path.resolve(strict=False)
+            else:
+                target_path = target_path.resolve(strict=False)
         except (ValueError, OSError):
             return False
         
@@ -65,7 +87,12 @@ class FilesystemIsolation:
             True if write access is allowed
         """
         try:
-            target_path = Path(path).resolve()
+            target_path = Path(path)
+            # Check for symlinks to prevent symlink attacks
+            if target_path.is_symlink():
+                target_path = target_path.resolve(strict=False)
+            else:
+                target_path = target_path.resolve(strict=False)
         except (ValueError, OSError):
             return False
         

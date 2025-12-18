@@ -77,19 +77,23 @@ class ResourceMonitor:
                 if memory_mb > self.limits.max_memory_mb:
                     return False, f"Memory limit exceeded: {memory_mb:.2f}MB > {self.limits.max_memory_mb}MB"
             except (psutil.NoSuchProcess, psutil.AccessDenied):
+                # If the process no longer exists or access is denied, skip memory check
                 pass
         
         # Check CPU (this is informational, hard to enforce in Python)
         if self.limits.max_cpu_percent > 0:
             try:
-                cpu_percent = self.process.cpu_percent(interval=0.1)
-                self.avg_cpu_percent = (self.avg_cpu_percent + cpu_percent) / 2
+                # Use interval=None for non-blocking call to avoid 100ms overhead
+                cpu_percent = self.process.cpu_percent(interval=None)
+                if cpu_percent > 0:  # Only update if we got a valid reading
+                    self.avg_cpu_percent = (self.avg_cpu_percent + cpu_percent) / 2
                 
                 # CPU limit is advisory - we log but don't fail
                 if cpu_percent > self.limits.max_cpu_percent:
                     # Note: We don't fail on CPU limit, just track it
                     pass
             except (psutil.NoSuchProcess, psutil.AccessDenied):
+                # If the process no longer exists or access is denied, skip CPU check
                 pass
         
         return True, None

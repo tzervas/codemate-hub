@@ -59,7 +59,14 @@ class EnclaveTool:
         
         # Set default paths if not provided
         if allowed_read_paths is None:
-            allowed_read_paths = ["/app/src", "/app/insights"]
+            # Only include default paths if they exist
+            default_read_paths = ["/app/src", "/app/insights"]
+            allowed_read_paths = [p for p in default_read_paths if Path(p).exists()]
+            if not allowed_read_paths:
+                logger.warning(
+                    "No default allowed_read_paths exist on this system. "
+                    "Enclave will have no read access unless paths are provided."
+                )
         if allowed_write_paths is None:
             allowed_write_paths = [f"/tmp/{enclave_id}"]
         

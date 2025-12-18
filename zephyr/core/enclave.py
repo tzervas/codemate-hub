@@ -4,7 +4,6 @@ Core enclave abstractions and configuration.
 Defines the base enclave interfaces, configuration, and result types.
 """
 
-import time
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Protocol

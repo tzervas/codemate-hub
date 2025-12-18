@@ -8,7 +8,6 @@ with resource limits and filesystem restrictions.
 import importlib
 import logging
 import os
-import sys
 import time
 import traceback
 from pathlib import Path
@@ -128,11 +127,20 @@ class EnclaveRunner:
             actual_args = args or {}
             actual_kwargs = kwargs or {}
             
-            # If args is a dict and looks like kwargs, use as kwargs
+            # Handle argument passing: support dict-as-kwargs or separate args/kwargs
+            # If args is a dict and kwargs is empty, treat args as keyword arguments
+            # Otherwise, use args and kwargs as provided
             if isinstance(actual_args, dict) and not actual_kwargs:
                 result = func(**actual_args)
+            elif isinstance(actual_args, dict):
+                # If both are provided, this is ambiguous - raise an error
+                raise ValueError(
+                    "Cannot provide both args as dict and non-empty kwargs. "
+                    "Use either args as dict (for keyword arguments) or kwargs, but not both."
+                )
             else:
-                result = func(*actual_args.values() if isinstance(actual_args, dict) else actual_args, **actual_kwargs)
+                # args is not a dict, so use it as positional args
+                result = func(*actual_args, **actual_kwargs)
             
             # Check resource limits after execution
             within_limits, error_msg = self._monitor.check_limits()
@@ -209,8 +217,12 @@ class EnclaveRunner:
                 os.environ[key] = value
     
     def cleanup(self) -> None:
-        """Clean up enclave resources."""
-        # Clean up working directory if needed
+        """Clean up enclave resources.
+        
+        Note: Only auto-generated directories (starting with 'enclave-') are cleaned up.
+        If you set a custom working_directory, you must clean it up manually.
+        """
+        # Clean up working directory if it's auto-generated
         working_dir = Path(self.config.working_directory)
         if working_dir.exists() and working_dir.name.startswith("enclave-"):
             # Only clean up auto-generated enclave directories

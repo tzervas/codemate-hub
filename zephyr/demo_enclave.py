@@ -71,20 +71,24 @@ def demo_code_analysis():
     logger.info("Demo 2: Code Analysis in Enclave")
     logger.info("=" * 60)
     
+    # Use relative path that works across different environments
+    src_dir = Path(__file__).parent.parent / "src"
+    
     # Create enclave with direct runner
     config = EnclaveConfig(
         name="code-analyzer",
         max_memory_mb=512,
         timeout_seconds=15,
-        allowed_read_paths=["/home/runner/work/codemate-hub/codemate-hub/src"],
+        allowed_read_paths=[str(src_dir)],
     )
     runner = EnclaveRunner(config)
     
     # Analyze the pipeline.py file
+    pipeline_file = src_dir / "pipeline.py"
     result = runner.execute(
         target_function="analyze_code",
         module_path="zephyr.examples.code_analyzer",
-        args={"code_file": "/home/runner/work/codemate-hub/codemate-hub/src/pipeline.py"},
+        args={"code_file": str(pipeline_file)},
     )
     
     if result.success:

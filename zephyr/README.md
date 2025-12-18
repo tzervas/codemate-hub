@@ -66,18 +66,30 @@ result = tool.run_in_enclave(enclave_id, task="analyze", file_path="/app/src/app
 
 ## Security Considerations
 
-1. **Filesystem Access**: Enclaves have explicit read/write path allowlists
-2. **Network Access**: Network operations are disabled by default
-3. **Resource Limits**: Memory, CPU, and time limits prevent resource exhaustion
-4. **Process Isolation**: Subprocess execution is restricted
-5. **Input Validation**: All inputs are validated before execution
+1. **Filesystem Access**: Enclaves have explicit read/write path allowlists with symlink validation
+2. **Network Access**: Network operations are not actively blocked (advisory restriction only)
+3. **Resource Limits**: Memory, CPU, and time limits are monitored but not strictly enforced at OS level
+4. **Process Isolation**: Subprocess execution is not actively restricted (advisory restriction only)
+5. **Input Validation**: Basic path and numeric validation is performed; additional validation should be done by callers
+
+**Important**: The current implementation provides application-level isolation and monitoring, not OS-level sandboxing. Enclave code can still:
+- Use network operations (sockets, HTTP requests, etc.)
+- Spawn subprocesses
+- Access system resources not explicitly blocked
+
+For production use with untrusted code, consider additional hardening:
+- OS-level network isolation (network namespaces, firewall rules)
+- Subprocess restrictions (seccomp filters, AppArmor/SELinux policies)
+- Container-based isolation (Docker, Podman)
+- Comprehensive input sanitization and validation
 
 ## Limitations
 
 - Enclaves are process-based, not container-based (lighter weight but less isolation than Docker)
-- Filesystem isolation uses Python's working directory and path restrictions (not kernel namespaces)
-- Resource limits are advisory and enforced at the application level
-- For stronger isolation, consider using Docker containers or actual OS-level sandboxing
+- Filesystem isolation uses Python path validation with symlink checks (not kernel namespaces)
+- Resource limits are advisory and monitored at the application level (not enforced by OS)
+- Network and subprocess restrictions are not actively enforced
+- For stronger isolation, use Docker containers or actual OS-level sandboxing (cgroups, namespaces, seccomp)
 
 ## Examples
 

@@ -28,6 +28,9 @@ def analyze_codebase_in_enclave():
     
     tool = EnclaveTool()
     
+    # Use relative path that works across different environments
+    src_dir = Path(__file__).parent.parent / "src"
+    
     # Create a dedicated enclave for code analysis
     enclave_id = tool.create_enclave(
         objective="Analyze Python codebase for metrics",
@@ -35,14 +38,14 @@ def analyze_codebase_in_enclave():
         max_memory_mb=512,
         max_cpu_percent=75,
         timeout_seconds=60,
-        allowed_read_paths=["/home/runner/work/codemate-hub/codemate-hub/src"],
+        allowed_read_paths=[str(src_dir)],
     )
     
     # Files to analyze
     files_to_analyze = [
-        "/home/runner/work/codemate-hub/codemate-hub/src/pipeline.py",
-        "/home/runner/work/codemate-hub/codemate-hub/src/enclave_tool.py",
-        "/home/runner/work/codemate-hub/codemate-hub/src/memory_setup.py",
+        str(src_dir / "pipeline.py"),
+        str(src_dir / "enclave_tool.py"),
+        str(src_dir / "memory_setup.py"),
     ]
     
     results = []

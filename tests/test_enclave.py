@@ -4,9 +4,7 @@ Tests for the Zephyr enclave system.
 This module tests enclave isolation, resource limits, and execution.
 """
 
-import os
 import tempfile
-import time
 from pathlib import Path
 
 import pytest
@@ -14,8 +12,6 @@ import pytest
 from zephyr.core.enclave import EnclaveConfig, EnclaveResult
 from zephyr.exec.runner import EnclaveRunner
 from zephyr.exec.isolation import FilesystemIsolation
-from zephyr.examples.code_analyzer import analyze_code_string
-from zephyr.examples.pipeline_step import simple_transform, word_count
 
 
 class TestEnclaveConfig:
@@ -126,7 +122,8 @@ class TestFilesystemIsolation:
             
             # Should raise PermissionError
             with pytest.raises(PermissionError, match="Access denied"):
-                isolation.safe_open(str(test_file), "w")
+                with isolation.safe_open(str(test_file), "w"):
+                    pass
 
 
 class TestEnclaveExecution:
