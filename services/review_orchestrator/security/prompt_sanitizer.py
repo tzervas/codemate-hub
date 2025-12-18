@@ -10,9 +10,9 @@ from typing import List
 
 
 class PromptSanitizer:
-    """Sanitizes user input to prevent prompt injection attacks."""
-
     # Define dangerous patterns as raw strings
+    """Sanitizer to remove potential prompt injection attempts."""
+    
     DANGEROUS_PATTERNS = [
         r"ignore\s+previous\s+instructions",
         r"system\s*:\s*",
