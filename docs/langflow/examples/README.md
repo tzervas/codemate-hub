@@ -38,7 +38,7 @@ This directory contains example Langflow workflows that demonstrate common codin
 
 **Use Case**: Automated code review with specific context and requirements.
 
-**Integration**: Can complement the review orchestrator in `services/review_orchestrator/`.
+**Integration**: Can be used alongside existing pipeline for code review tasks.
 
 **How to Use**:
 1. Import the flow into Langflow
@@ -48,29 +48,7 @@ This directory contains example Langflow workflows that demonstrate common codin
 
 ---
 
-### 3. Bug Analysis Pipeline (`bug-analysis-pipeline.json`)
-
-**Purpose**: Analyze code for potential bugs and provide detailed explanations.
-
-**Components**:
-- Input: Code snippet or file content
-- Chain: Multi-step analysis (syntax → logic → edge cases)
-- LLM: Ollama component
-- Output: Structured bug report
-
-**Use Case**: Deep analysis of code for potential issues before deployment.
-
-**Integration**: Can be integrated with CI/CD pipeline for automated bug detection.
-
-**How to Use**:
-1. Import the flow into Langflow
-2. Paste code to analyze
-3. Review the multi-stage analysis output
-4. Address identified issues
-
----
-
-### 4. Documentation Generator (`documentation-generator.json`)
+### 3. Documentation Generator (`documentation-generator.json`)
 
 **Purpose**: Generate comprehensive documentation from code.
 
@@ -89,28 +67,6 @@ This directory contains example Langflow workflows that demonstrate common codin
 2. Provide the code to document
 3. Specify documentation style (e.g., "Google style", "NumPy style")
 4. Generate and review documentation
-
----
-
-### 5. Test Case Generator (`test-case-generator.json`)
-
-**Purpose**: Generate unit tests for given code.
-
-**Components**:
-- Input: Code to test
-- Prompt Template: Test generation template with framework specification
-- LLM: Ollama component
-- Output: Test cases
-
-**Use Case**: Quickly generate test cases for new or existing code.
-
-**Integration**: Complements existing test infrastructure in `tests/`.
-
-**How to Use**:
-1. Import the flow into Langflow
-2. Provide the code to test
-3. Specify test framework (e.g., "pytest", "unittest")
-4. Review and refine generated tests
 
 ---
 
@@ -194,10 +150,8 @@ print(result)
 | Flow Type | Pipeline Component | Relationship |
 |-----------|-------------------|--------------|
 | Simple Code Generation | `pipeline.py` generate | Direct alternative |
-| Code Review | Review orchestrator | Complementary |
-| Bug Analysis | Static analysis | Complementary |
+| Code Review | Code review tasks | Complementary |
 | Documentation | N/A | New capability |
-| Test Generation | N/A | New capability |
 
 ## Testing Flows
 

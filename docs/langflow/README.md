@@ -212,7 +212,7 @@ If flows cannot connect to Ollama:
 
 1. **Version Control**: Export flows to `docs/langflow/examples/` and commit JSON files
 2. **Documentation**: Document each flow's purpose, inputs, outputs, and dependencies
-3. **Naming**: Use descriptive flow names (e.g., `code-review-with-context`, `bug-analysis`)
+3. **Naming**: Use descriptive flow names (e.g., `code-review-with-context`, `documentation-generator`)
 4. **Testing**: Test flows thoroughly before integrating with production pipelines
 5. **Backup**: Regularly backup `langflow_data/langflow.db` before major changes
 6. **Resource Usage**: Monitor LLM token usage and response times for complex flows
