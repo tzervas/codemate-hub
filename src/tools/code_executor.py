@@ -19,6 +19,7 @@ from typing import Any, Optional
 @dataclass
 class ExecutionResult:
     """Result of code execution."""
+
     success: bool
     stdout: str
     stderr: str
@@ -31,21 +32,21 @@ class ExecutionResult:
 class CodeExecutorTool:
     """
     Sandboxed code executor supporting multiple languages.
-    
+
     Supports:
     - Python (via subprocess)
     - JavaScript (via Node.js)
     - Bash (via shell)
-    
+
     Features:
     - Timeout enforcement
     - Output truncation
     - Error capture
     """
-    
+
     name = "code_executor"
     description = "Execute code snippets in a sandboxed environment"
-    
+
     SUPPORTED_LANGUAGES = {
         "python": {
             "extension": ".py",
@@ -63,7 +64,7 @@ class CodeExecutorTool:
             "shebang": "#!/bin/bash",
         },
     }
-    
+
     def __init__(
         self,
         sandbox: bool = True,
@@ -74,7 +75,7 @@ class CodeExecutorTool:
     ):
         """
         Initialize code executor.
-        
+
         Args:
             sandbox: Enable sandboxing (restricts file/network access)
             timeout_seconds: Maximum execution time
@@ -87,7 +88,7 @@ class CodeExecutorTool:
         self.max_memory_mb = max_memory_mb
         self.max_output_chars = max_output_chars
         self.allowed_languages = allowed_languages or list(self.SUPPORTED_LANGUAGES.keys())
-    
+
     async def execute(
         self,
         code: str,
@@ -96,17 +97,17 @@ class CodeExecutorTool:
     ) -> dict[str, Any]:
         """
         Execute code snippet.
-        
+
         Args:
             code: Code to execute
             language: Programming language
             timeout: Override default timeout
-            
+
         Returns:
             Dictionary with execution results
         """
         language = language.lower()
-        
+
         # Validate language
         if language not in self.SUPPORTED_LANGUAGES:
             return {
@@ -114,30 +115,30 @@ class CodeExecutorTool:
                 "error": f"Unsupported language: {language}",
                 "supported_languages": list(self.SUPPORTED_LANGUAGES.keys()),
             }
-        
+
         if language not in self.allowed_languages:
             return {
                 "success": False,
                 "error": f"Language not allowed: {language}",
                 "allowed_languages": self.allowed_languages,
             }
-        
+
         timeout = timeout or self.timeout_seconds
         lang_config = self.SUPPORTED_LANGUAGES[language]
-        
+
         # Create temporary file
         with tempfile.NamedTemporaryFile(
-            mode='w',
+            mode="w",
             suffix=lang_config["extension"],
             delete=False,
-            encoding='utf-8',
+            encoding="utf-8",
         ) as f:
             # Add shebang for non-Windows
-            if os.name != 'nt':
+            if os.name != "nt":
                 f.write(lang_config["shebang"] + "\n")
             f.write(code)
             temp_file = f.name
-        
+
         try:
             result = await self._run_subprocess(
                 command=lang_config["command"] + [temp_file],
@@ -159,7 +160,7 @@ class CodeExecutorTool:
                 os.unlink(temp_file)
             except OSError:
                 pass
-    
+
     async def _run_subprocess(
         self,
         command: list[str],
@@ -168,11 +169,11 @@ class CodeExecutorTool:
     ) -> ExecutionResult:
         """Run subprocess with timeout and capture output."""
         start_time = time.time()
-        
+
         try:
             # Build environment
             env = os.environ.copy()
-            
+
             # Sandbox restrictions (basic)
             if self.sandbox:
                 # Restrict certain environment variables
@@ -180,7 +181,7 @@ class CodeExecutorTool:
                 env.pop("AWS_SECRET_ACCESS_KEY", None)
                 env.pop("GITHUB_TOKEN", None)
                 env.pop("DATABASE_URL", None)
-            
+
             # Run process
             process = await asyncio.create_subprocess_exec(
                 *command,
@@ -188,7 +189,7 @@ class CodeExecutorTool:
                 stderr=asyncio.subprocess.PIPE,
                 env=env,
             )
-            
+
             try:
                 stdout_bytes, stderr_bytes = await asyncio.wait_for(
                     process.communicate(),
@@ -205,22 +206,22 @@ class CodeExecutorTool:
                     execution_time_ms=(time.time() - start_time) * 1000,
                     language=language,
                 )
-            
+
             execution_time = (time.time() - start_time) * 1000
-            
+
             # Decode output
-            stdout = stdout_bytes.decode('utf-8', errors='replace')
-            stderr = stderr_bytes.decode('utf-8', errors='replace')
-            
+            stdout = stdout_bytes.decode("utf-8", errors="replace")
+            stderr = stderr_bytes.decode("utf-8", errors="replace")
+
             # Truncate if needed
             truncated = False
             if len(stdout) > self.max_output_chars:
-                stdout = stdout[:self.max_output_chars] + "\n... [output truncated]"
+                stdout = stdout[: self.max_output_chars] + "\n... [output truncated]"
                 truncated = True
             if len(stderr) > self.max_output_chars:
-                stderr = stderr[:self.max_output_chars] + "\n... [output truncated]"
+                stderr = stderr[: self.max_output_chars] + "\n... [output truncated]"
                 truncated = True
-            
+
             return ExecutionResult(
                 success=process.returncode == 0,
                 stdout=stdout,
@@ -230,7 +231,7 @@ class CodeExecutorTool:
                 language=language,
                 truncated=truncated,
             )
-            
+
         except Exception as e:
             return ExecutionResult(
                 success=False,
@@ -240,7 +241,7 @@ class CodeExecutorTool:
                 execution_time_ms=(time.time() - start_time) * 1000,
                 language=language,
             )
-    
+
     async def validate_syntax(
         self,
         code: str,
@@ -248,16 +249,16 @@ class CodeExecutorTool:
     ) -> dict[str, Any]:
         """
         Validate code syntax without execution.
-        
+
         Args:
             code: Code to validate
             language: Programming language
-            
+
         Returns:
             Dictionary with validation results
         """
         language = language.lower()
-        
+
         if language == "python":
             try:
                 compile(code, "<string>", "exec")
@@ -273,7 +274,7 @@ class CodeExecutorTool:
                     "line": e.lineno,
                     "offset": e.offset,
                 }
-        
+
         elif language == "javascript":
             # Use node to check syntax
             result = await self.execute(
@@ -289,32 +290,34 @@ class CodeExecutorTool:
                     "language": language,
                     "error": result.get("stderr", "Syntax error"),
                 }
-        
+
         elif language == "bash":
             # Use bash -n to check syntax
-            with tempfile.NamedTemporaryFile(mode='w', suffix='.sh', delete=False) as f:
+            with tempfile.NamedTemporaryFile(mode="w", suffix=".sh", delete=False) as f:
                 f.write(code)
                 temp_file = f.name
-            
+
             try:
                 process = await asyncio.create_subprocess_exec(
-                    "bash", "-n", temp_file,
+                    "bash",
+                    "-n",
+                    temp_file,
                     stdout=asyncio.subprocess.PIPE,
                     stderr=asyncio.subprocess.PIPE,
                 )
                 _, stderr = await process.communicate()
-                
+
                 if process.returncode == 0:
                     return {"valid": True, "language": language}
                 else:
                     return {
                         "valid": False,
                         "language": language,
-                        "error": stderr.decode('utf-8', errors='replace'),
+                        "error": stderr.decode("utf-8", errors="replace"),
                     }
             finally:
                 os.unlink(temp_file)
-        
+
         else:
             return {
                 "valid": False,
@@ -323,9 +326,10 @@ class CodeExecutorTool:
 
 
 if __name__ == "__main__":
+
     async def main():
         executor = CodeExecutorTool(timeout_seconds=10)
-        
+
         # Test Python
         print("Testing Python execution:")
         result = await executor.execute(
@@ -335,7 +339,7 @@ if __name__ == "__main__":
         print(f"  Success: {result['success']}")
         print(f"  Output: {result['stdout']}")
         print(f"  Time: {result['execution_time_ms']:.2f}ms")
-        
+
         # Test syntax validation
         print("\nTesting syntax validation:")
         valid_result = await executor.validate_syntax(
@@ -343,12 +347,12 @@ if __name__ == "__main__":
             language="python",
         )
         print(f"  Valid syntax: {valid_result['valid']}")
-        
+
         invalid_result = await executor.validate_syntax(
             code='def hello(\n    print("hi")',
             language="python",
         )
         print(f"  Invalid syntax: {not invalid_result['valid']}")
         print(f"  Error: {invalid_result.get('error', 'N/A')}")
-    
+
     asyncio.run(main())

@@ -24,35 +24,39 @@ __all__ = [
 def load_tool(tool_name: str, config: dict | None = None):
     """
     Load a tool by name with optional configuration.
-    
+
     Args:
         tool_name: Name of the tool to load
         config: Optional configuration dictionary
-        
+
     Returns:
         Initialized tool instance
-        
+
     Raises:
         ValueError: If tool name is not recognized
     """
     config = config or {}
-    
+
     if tool_name == "code_executor":
         from .code_executor import CodeExecutorTool
+
         return CodeExecutorTool(**config)
-    
+
     elif tool_name == "document_processor":
         from .document_processor import DocumentProcessorTool
+
         return DocumentProcessorTool(config)
-    
+
     elif tool_name == "git_operations":
         from .git_ops import GitOperationsTool
+
         return GitOperationsTool(**config)
-    
+
     elif tool_name == "vector_search":
         from .vector_search import VectorSearchTool
+
         return VectorSearchTool(**config)
-    
+
     else:
         raise ValueError(f"Unknown tool: {tool_name}")
 
@@ -60,7 +64,7 @@ def load_tool(tool_name: str, config: dict | None = None):
 def list_available_tools() -> list[dict]:
     """
     List all available tools with their descriptions.
-    
+
     Returns:
         List of tool information dictionaries
     """
