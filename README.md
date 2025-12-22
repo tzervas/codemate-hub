@@ -1,13 +1,34 @@
 # Dockerized Agentic Coding Assistant
 
-A containerized multi-service platform for running an AI-powered coding assistant with Ollama, Langflow, and a development environment.
+A containerized multi-service platform for running an AI-powered coding assistant with Ollama, Langflow, development environment, and comprehensive observability.
 
 ## Services
 
+### Core Services
 - **Ollama**: Local LLM inference engine (port 11434)
 - **Langflow**: Visual workflow orchestration (port 7860)
 - **Code-Server**: Remote VS Code IDE (port 8080)
 - **App**: Python coding assistant with pipeline runner (port 8000)
+- **Open-WebUI**: Web interface for LLM interactions (port 3000)
+
+### Observability Stack
+- **Grafana**: Metrics visualization and dashboards (port 3001)
+- **Prometheus**: Metrics collection and alerting (port 9090)
+- **Loki**: Log aggregation (port 3100)
+- **Tempo**: Distributed tracing (port 3200)
+- **OpenTelemetry Collector**: Unified telemetry pipeline
+- **Node Exporter**: System metrics (port 9100)
+- **cAdvisor**: Container metrics (port 8081)
+
+### MCP Servers (Rust SDK)
+- **filesystem**: File operations
+- **memory**: Persistent key-value store
+- **sqlite**: SQL database operations
+- **fetch**: HTTP requests
+- **github**: GitHub API (optional)
+- **sequential-thinking**: Chain-of-thought reasoning
+- **brave-search**: Web search (optional)
+- **postgres**: PostgreSQL (optional)
 
 ## Quick Start
 
@@ -42,11 +63,26 @@ nano .env
 
 # Or for attached mode with logs:
 ./scripts/deploy.sh attached
+
+# (Optional) Deploy observability stack
+./scripts/deploy-observability.sh start
 ```
 
 ### 4. Access Services
 
 Once deployment is complete:
+
+**Core Services:**
+- **Langflow UI**: http://localhost:7860
+- **Code Server**: http://localhost:8080 (password in .env)
+- **Ollama API**: http://localhost:11434
+- **Open-WebUI**: http://localhost:3000
+
+**Observability (if deployed):**
+- **Grafana**: http://localhost:3001 (admin/admin)
+- **Prometheus**: http://localhost:9090
+- **Loki**: http://localhost:3100
+- **Tempo**: http://localhost:3200
 
 - **Langflow UI**: http://localhost:7860
 - **Code Server**: http://localhost:8080 (password in .env)
@@ -121,6 +157,52 @@ docker-compose down -v
 # Then explicitly remove the chroma_db directory
 rm -rf chroma_db/
 ```
+
+### Observability & Monitoring
+
+#### Deploy Observability Stack
+
+```bash
+# Start monitoring services
+./scripts/deploy-observability.sh start
+
+# Check status
+./scripts/deploy-observability.sh status
+
+# Stop monitoring
+./scripts/deploy-observability.sh stop
+```
+
+#### Access Monitoring Dashboards
+
+- **Grafana**: http://localhost:3001 (admin/admin)
+  - Pre-configured dashboards in "AI Research" folder
+  - AI/ML Model Performance
+  - Vector Database Metrics
+  - Langflow Workflows
+  - System Overview
+
+- **Prometheus**: http://localhost:9090
+  - Raw metrics and custom queries
+  - Alert rules for AI/ML workloads
+
+- **Loki**: http://localhost:3100
+  - Structured log aggregation
+  - Linked to traces via trace_id
+
+- **Tempo**: http://localhost:3200
+  - Distributed tracing
+  - Linked to logs and metrics
+
+#### Key Metrics
+
+- **Inference Performance**: Request latency (p50/p95/p99), throughput, tokens/sec
+- **GPU Usage**: Utilization %, memory usage, temperature
+- **Vector DB**: Query latency, collection sizes, similarity scores, cache hit rate
+- **Workflows**: Flow execution time, node performance, success/error rates
+- **System**: CPU, memory, disk I/O, network, container metrics
+
+For detailed observability documentation, see [docs/OBSERVABILITY.md](docs/OBSERVABILITY.md).
 
 ### Disk Usage & Model Pruning
 
