@@ -20,6 +20,13 @@ DEFAULT_MODELS=(
   "mistral:latest"
 )
 
+# Curated set of models typically available for local/self-hosting without per-request charges.
+ALL_FREE_MODELS=(
+  "qwen2.5-coder:7b-q4_0"
+  "mistral:latest"
+  "neural-chat:latest"
+)
+
 # Color output for better readability
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -99,6 +106,20 @@ COMMAND=${1:-default}
 case "$COMMAND" in
   list)
     list_available_models
+    ;;
+  all-free)
+    log_info "Pulling curated set of free/self-hostable models..."
+    failed=0
+    for model in "${ALL_FREE_MODELS[@]}"; do
+      if ! pull_model "$model"; then
+        ((failed++))
+      fi
+    done
+    if [ $failed -eq 0 ]; then
+      log_success "All free models pulled successfully"
+    else
+      log_warn "$failed free model(s) failed to pull"
+    fi
     ;;
   default)
     pull_default_models

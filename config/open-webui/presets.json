@@ -1,0 +1,118 @@
+{
+  "version": "1.0.0",
+  "description": "Open-WebUI configuration presets for optimal multimodal experience",
+  "models": {
+    "default": "qwen2.5-coder:7b-q4_0",
+    "presets": [
+      {
+        "id": "code-assistant",
+        "name": "Code Assistant",
+        "model": "qwen2.5-coder:7b-q4_0",
+        "system_prompt": "You are an expert software engineer. Provide clean, well-documented, production-ready code with proper error handling and type hints. Follow language-specific best practices and conventions.",
+        "parameters": {
+          "temperature": 0.2,
+          "top_p": 0.9,
+          "top_k": 40,
+          "num_ctx": 8192,
+          "num_predict": 2048,
+          "repeat_penalty": 1.1
+        },
+        "tags": ["code", "development", "programming"]
+      },
+      {
+        "id": "creative-writer",
+        "name": "Creative Writer",
+        "model": "mistral:latest",
+        "system_prompt": "You are a creative writer with expertise in storytelling, technical writing, and content creation. Produce engaging, well-structured content tailored to the audience and purpose.",
+        "parameters": {
+          "temperature": 0.8,
+          "top_p": 0.95,
+          "top_k": 50,
+          "num_ctx": 4096,
+          "num_predict": 1024,
+          "repeat_penalty": 1.0
+        },
+        "tags": ["writing", "creative", "content"]
+      },
+      {
+        "id": "analyst",
+        "name": "Data Analyst",
+        "model": "qwen2.5-coder:7b-q4_0",
+        "system_prompt": "You are a data analyst expert in statistical analysis, data visualization, and deriving insights from data. Provide clear explanations with relevant examples and code when applicable.",
+        "parameters": {
+          "temperature": 0.3,
+          "top_p": 0.85,
+          "top_k": 30,
+          "num_ctx": 8192,
+          "num_predict": 1536
+        },
+        "tags": ["data", "analysis", "statistics"]
+      },
+      {
+        "id": "reviewer",
+        "name": "Code Reviewer",
+        "model": "qwen2.5-coder:7b-q4_0",
+        "system_prompt": "You are a senior code reviewer focused on security, performance, and best practices. Analyze code thoroughly, identify potential issues, and provide constructive feedback with specific recommendations.",
+        "parameters": {
+          "temperature": 0.1,
+          "top_p": 0.8,
+          "top_k": 20,
+          "num_ctx": 16384,
+          "num_predict": 2048
+        },
+        "tags": ["review", "security", "quality"]
+      },
+      {
+        "id": "researcher",
+        "name": "Research Assistant",
+        "model": "mistral:latest",
+        "system_prompt": "You are a research assistant skilled in gathering, synthesizing, and presenting information. Provide well-sourced, balanced analysis on topics. Acknowledge limitations and uncertainties in your knowledge.",
+        "parameters": {
+          "temperature": 0.4,
+          "top_p": 0.9,
+          "num_ctx": 8192,
+          "num_predict": 2048
+        },
+        "tags": ["research", "analysis", "knowledge"]
+      }
+    ]
+  },
+  "rag": {
+    "enabled": true,
+    "chunk_size": 1000,
+    "chunk_overlap": 200,
+    "top_k": 5,
+    "relevance_threshold": 0.7,
+    "embedding_model": "nomic-embed-text"
+  },
+  "features": {
+    "web_search": {
+      "enabled": true,
+      "engine": "duckduckgo",
+      "max_results": 5
+    },
+    "image_generation": {
+      "enabled": false,
+      "note": "Enable Stable Diffusion service in docker-compose.yml"
+    },
+    "voice": {
+      "enabled": false,
+      "stt_model": "whisper",
+      "tts_model": "piper"
+    },
+    "code_interpreter": {
+      "enabled": true,
+      "sandbox": true,
+      "languages": ["python", "javascript", "bash"]
+    }
+  },
+  "ui": {
+    "theme": "dark",
+    "default_model": "qwen2.5-coder:7b-q4_0",
+    "show_model_info": true,
+    "enable_markdown": true,
+    "enable_latex": true,
+    "enable_code_highlighting": true,
+    "max_file_upload_mb": 50
+  }
+}
