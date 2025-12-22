@@ -73,6 +73,55 @@ Highlights:
 #### Docs & QA Tracker
 _(unchanged since 2025-12-13)_
 
+
+### 👤 Human Changes
+
+**Fixes**
+- 233e169 fix(deps): update opentelemetry versions to match crewai requirements
+
+**Other**
+- 18b8c61 Merge pull request #14 from tzervas/feature/ci-tooling (#14)
+
+### 🤖 AI/Agent Changes
+
+**Other**
+- a430dd7 Task 06: Developer UX - workspace configuration and onboarding guide (#23) (#23)
+- 46061ed Add self-hosted documentation infrastructure with MkDocs and automation (#25) (#25)
+- 71fe8f1 Implement Zephyr enclave system for isolated code execution (#22) (#22)
+- a643e82 Add Langflow integration documentation and example workflow templates (#21) (#21)
+- 8bd7530 Implement signal-based agent orchestration with parallel task execution (#19) (#19)
+- 7fc5521 Add branch update automation and documentation (#31) (#31)
+
+### ⚙️ Bot Changes
+
+**Other**
+- 8dbd3bd Merge origin/devel - integrate Tasks 04-08 changes
+- ede6d3d Merge origin/main into copilot/merge-feature-branches-for-task-07
+- 8ab33cb Fix shellcheck warning: add -r flag to read command in teardown.sh
+- 5a56f0c Add .env.example template file for environment configuration
+- 50d2ffc Complete Task 07: Enhance automation scripts with idempotency and env validation
+- 0ed2ce4 Initial plan
+
+### Contributors
+
+**👤 Human**
+- Tyler Zervas (2 commits)
+
+**🤖 AI/Agent**
+- Copilot (6 commits)
+
+**⚙️ Bot**
+- copilot-swe-agent[bot] (6 commits)
+
+### Areas Touched
+
+- Application
+- Configuration
+- Documentation
+- Other
+- Scripts
+- Tests
+
 ## Snapshot 2025-12-13
 
 ### Completed Tasks
