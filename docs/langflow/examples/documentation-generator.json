@@ -1,0 +1,176 @@
+{
+  "name": "Documentation Generator",
+  "description": "Generate comprehensive documentation from code snippets",
+  "data": {
+    "nodes": [
+      {
+        "id": "input-code",
+        "type": "TextInput",
+        "position": {"x": 100, "y": 150},
+        "data": {
+          "node": {
+            "template": {
+              "input_text": {
+                "value": "",
+                "type": "str",
+                "required": true,
+                "placeholder": "Paste the code to document",
+                "name": "input_text"
+              }
+            },
+            "description": "Code to generate documentation for",
+            "base_classes": ["str"]
+          },
+          "type": "TextInput"
+        }
+      },
+      {
+        "id": "input-style",
+        "type": "TextInput",
+        "position": {"x": 100, "y": 300},
+        "data": {
+          "node": {
+            "template": {
+              "input_text": {
+                "value": "Google style",
+                "type": "str",
+                "required": false,
+                "placeholder": "Documentation style (Google, NumPy, Sphinx)",
+                "name": "input_text"
+              }
+            },
+            "description": "Documentation style preference",
+            "base_classes": ["str"]
+          },
+          "type": "TextInput"
+        }
+      },
+      {
+        "id": "prompt-doc",
+        "type": "PromptTemplate",
+        "position": {"x": 400, "y": 200},
+        "data": {
+          "node": {
+            "template": {
+              "template": {
+                "value": "You are a technical documentation expert. Generate comprehensive documentation for the following code in {style} format:\n\n```\n{code}\n```\n\nInclude:\n1. Brief description of what the code does\n2. Parameters/arguments with types and descriptions\n3. Return value(s) with types\n4. Usage examples\n5. Any important notes or warnings\n\nFormat the output in Markdown.",
+                "type": "str",
+                "required": true,
+                "name": "template"
+              },
+              "code": {
+                "value": "",
+                "type": "str",
+                "required": true,
+                "name": "code"
+              },
+              "style": {
+                "value": "Google style",
+                "type": "str",
+                "required": false,
+                "name": "style"
+              }
+            },
+            "description": "Documentation generation prompt",
+            "base_classes": ["str"]
+          },
+          "type": "PromptTemplate"
+        }
+      },
+      {
+        "id": "ollama-doc",
+        "type": "OllamaModel",
+        "position": {"x": 700, "y": 200},
+        "data": {
+          "node": {
+            "template": {
+              "base_url": {
+                "value": "http://ollama:11434",
+                "type": "str",
+                "required": true,
+                "name": "base_url"
+              },
+              "model": {
+                "value": "qwen2.5-coder:7b-q4_0",
+                "type": "str",
+                "required": true,
+                "name": "model"
+              },
+              "temperature": {
+                "value": 0.4,
+                "type": "float",
+                "required": false,
+                "name": "temperature"
+              },
+              "prompt": {
+                "value": "",
+                "type": "str",
+                "required": true,
+                "name": "prompt"
+              }
+            },
+            "description": "Ollama LLM for documentation generation",
+            "base_classes": ["BaseLLM"]
+          },
+          "type": "OllamaModel"
+        }
+      },
+      {
+        "id": "output-doc",
+        "type": "TextOutput",
+        "position": {"x": 1000, "y": 200},
+        "data": {
+          "node": {
+            "template": {
+              "input_text": {
+                "value": "",
+                "type": "str",
+                "required": true,
+                "name": "input_text"
+              }
+            },
+            "description": "Generated documentation",
+            "base_classes": ["str"]
+          },
+          "type": "TextOutput"
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "edge-1",
+        "source": "input-code",
+        "sourceHandle": "output",
+        "target": "prompt-doc",
+        "targetHandle": "code"
+      },
+      {
+        "id": "edge-2",
+        "source": "input-style",
+        "sourceHandle": "output",
+        "target": "prompt-doc",
+        "targetHandle": "style"
+      },
+      {
+        "id": "edge-3",
+        "source": "prompt-doc",
+        "sourceHandle": "output",
+        "target": "ollama-doc",
+        "targetHandle": "prompt"
+      },
+      {
+        "id": "edge-4",
+        "source": "ollama-doc",
+        "sourceHandle": "output",
+        "target": "output-doc",
+        "targetHandle": "input_text"
+      }
+    ]
+  },
+  "version": "1.0.0",
+  "metadata": {
+    "author": "Codemate-Hub",
+    "tags": ["documentation", "ollama", "code-docs"],
+    "created": "2024-12-16"
+  }
+}
