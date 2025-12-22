@@ -1,0 +1,103 @@
+{
+  "mcpServers": {
+    "filesystem": {
+      "command": "mcp-server-filesystem",
+      "args": ["/app/src", "/app/config", "/app/insights"],
+      "env": {},
+      "description": "File system operations using Rust MCP SDK",
+      "sdk": "rust",
+      "enabled": true
+    },
+    "memory": {
+      "command": "mcp-server-memory",
+      "args": ["--db-path", "/app/chroma_db/mcp_memory.db"],
+      "env": {},
+      "description": "Persistent key-value memory store",
+      "sdk": "rust",
+      "enabled": true
+    },
+    "sqlite": {
+      "command": "mcp-server-sqlite",
+      "args": ["--db-path", "/app/data/mcp.sqlite"],
+      "env": {},
+      "description": "SQLite database operations",
+      "sdk": "rust",
+      "enabled": true
+    },
+    "fetch": {
+      "command": "mcp-server-fetch",
+      "args": [],
+      "env": {
+        "USER_AGENT": "CodeMate-Hub/1.0"
+      },
+      "description": "HTTP fetch operations",
+      "sdk": "rust",
+      "enabled": true
+    },
+    "github": {
+      "command": "mcp-server-github",
+      "args": [],
+      "env": {
+        "GITHUB_TOKEN": "${GITHUB_TOKEN}"
+      },
+      "description": "GitHub API integration",
+      "sdk": "rust",
+      "enabled": false,
+      "required_env": ["GITHUB_TOKEN"]
+    },
+    "sequential-thinking": {
+      "command": "mcp-server-sequential-thinking",
+      "args": [],
+      "env": {},
+      "description": "Chain-of-thought reasoning enhancement",
+      "sdk": "rust",
+      "enabled": true
+    },
+    "brave-search": {
+      "command": "mcp-server-brave-search",
+      "args": [],
+      "env": {
+        "BRAVE_API_KEY": "${BRAVE_API_KEY}"
+      },
+      "description": "Web search via Brave API",
+      "sdk": "rust",
+      "enabled": false,
+      "required_env": ["BRAVE_API_KEY"]
+    },
+    "postgres": {
+      "command": "mcp-server-postgres",
+      "args": [],
+      "env": {
+        "DATABASE_URL": "${DATABASE_URL}"
+      },
+      "description": "PostgreSQL database operations",
+      "sdk": "rust",
+      "enabled": false,
+      "required_env": ["DATABASE_URL"]
+    }
+  },
+  "settings": {
+    "auto_start": true,
+    "restart_on_failure": true,
+    "max_retries": 3,
+    "health_check_interval": 30,
+    "log_level": "info",
+    "metrics_enabled": true,
+    "tracing_enabled": true,
+    "otel_endpoint": "http://otel-collector:4317"
+  },
+  "installation": {
+    "rust_mcp_servers": [
+      "mcp-server-filesystem",
+      "mcp-server-memory",
+      "mcp-server-sqlite",
+      "mcp-server-fetch",
+      "mcp-server-github",
+      "mcp-server-sequential-thinking",
+      "mcp-server-brave-search",
+      "mcp-server-postgres"
+    ],
+    "install_command": "cargo install --git https://github.com/modelcontextprotocol/servers",
+    "install_path": "/usr/local/bin"
+  }
+}

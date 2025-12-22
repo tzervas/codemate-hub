@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  ollama:
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+    # Request GPUs from the host (requires nvidia-container-toolkit)
+    device_requests:
+      - driver: nvidia
+        count: all
+        capabilities: ["gpu"]

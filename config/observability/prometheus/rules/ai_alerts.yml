@@ -1,0 +1,67 @@
+groups:
+  - name: ai_research_alerts
+    interval: 30s
+    rules:
+      # High inference latency
+      - alert: HighInferenceLatency
+        expr: histogram_quantile(0.95, rate(ollama_request_duration_seconds_bucket[5m])) > 10
+        for: 5m
+        labels:
+          severity: warning
+          component: ollama
+        annotations:
+          summary: "High LLM inference latency detected"
+          description: "95th percentile latency is {{ $value }}s (threshold: 10s)"
+
+      # GPU memory usage
+      - alert: HighGPUMemoryUsage
+        expr: (nvidia_gpu_memory_used_bytes / nvidia_gpu_memory_total_bytes) > 0.9
+        for: 5m
+        labels:
+          severity: warning
+          component: gpu
+        annotations:
+          summary: "GPU memory usage is high"
+          description: "GPU memory usage is {{ $value | humanizePercentage }}"
+
+      # High error rate
+      - alert: HighErrorRate
+        expr: rate(http_requests_total{status=~"5.."}[5m]) > 0.05
+        for: 5m
+        labels:
+          severity: critical
+          component: application
+        annotations:
+          summary: "High error rate detected"
+          description: "Error rate is {{ $value | humanize }} errors/sec"
+
+      # Container down
+      - alert: ContainerDown
+        expr: up == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Container {{ $labels.job }} is down"
+          description: "{{ $labels.instance }} has been down for more than 2 minutes"
+
+      # Disk space warning
+      - alert: DiskSpaceLow
+        expr: (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"}) < 0.1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Low disk space on root filesystem"
+          description: "Only {{ $value | humanizePercentage }} disk space remaining"
+
+      # Vector DB high latency
+      - alert: HighVectorDBLatency
+        expr: histogram_quantile(0.95, rate(chroma_query_duration_seconds_bucket[5m])) > 2
+        for: 5m
+        labels:
+          severity: warning
+          component: chroma
+        annotations:
+          summary: "High ChromaDB query latency"
+          description: "95th percentile latency is {{ $value }}s"

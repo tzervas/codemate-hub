@@ -1,0 +1,142 @@
+{
+  "name": "Simple Code Generation",
+  "description": "Generate code snippets based on natural language descriptions using Ollama",
+  "data": {
+    "nodes": [
+      {
+        "id": "input-1",
+        "type": "TextInput",
+        "position": {"x": 100, "y": 200},
+        "data": {
+          "node": {
+            "template": {
+              "input_text": {
+                "value": "",
+                "type": "str",
+                "required": true,
+                "placeholder": "Describe the code you want to generate",
+                "name": "input_text"
+              }
+            },
+            "description": "User prompt for code generation",
+            "base_classes": ["str"]
+          },
+          "type": "TextInput"
+        }
+      },
+      {
+        "id": "prompt-1",
+        "type": "PromptTemplate",
+        "position": {"x": 400, "y": 200},
+        "data": {
+          "node": {
+            "template": {
+              "template": {
+                "value": "You are an expert programmer. Generate clean, efficient, and well-documented code based on the following description:\n\n{input}\n\nProvide only the code without additional explanations.",
+                "type": "str",
+                "required": true,
+                "name": "template"
+              },
+              "input": {
+                "value": "",
+                "type": "str",
+                "required": true,
+                "name": "input"
+              }
+            },
+            "description": "Prompt template for code generation",
+            "base_classes": ["str"]
+          },
+          "type": "PromptTemplate"
+        }
+      },
+      {
+        "id": "ollama-1",
+        "type": "OllamaModel",
+        "position": {"x": 700, "y": 200},
+        "data": {
+          "node": {
+            "template": {
+              "base_url": {
+                "value": "http://ollama:11434",
+                "type": "str",
+                "required": true,
+                "name": "base_url"
+              },
+              "model": {
+                "value": "qwen2.5-coder:7b-q4_0",
+                "type": "str",
+                "required": true,
+                "name": "model"
+              },
+              "temperature": {
+                "value": 0.3,
+                "type": "float",
+                "required": false,
+                "name": "temperature"
+              },
+              "prompt": {
+                "value": "",
+                "type": "str",
+                "required": true,
+                "name": "prompt"
+              }
+            },
+            "description": "Ollama LLM for code generation",
+            "base_classes": ["BaseLLM"]
+          },
+          "type": "OllamaModel"
+        }
+      },
+      {
+        "id": "output-1",
+        "type": "TextOutput",
+        "position": {"x": 1000, "y": 200},
+        "data": {
+          "node": {
+            "template": {
+              "input_text": {
+                "value": "",
+                "type": "str",
+                "required": true,
+                "name": "input_text"
+              }
+            },
+            "description": "Generated code output",
+            "base_classes": ["str"]
+          },
+          "type": "TextOutput"
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "edge-1",
+        "source": "input-1",
+        "sourceHandle": "output",
+        "target": "prompt-1",
+        "targetHandle": "input"
+      },
+      {
+        "id": "edge-2",
+        "source": "prompt-1",
+        "sourceHandle": "output",
+        "target": "ollama-1",
+        "targetHandle": "prompt"
+      },
+      {
+        "id": "edge-3",
+        "source": "ollama-1",
+        "sourceHandle": "output",
+        "target": "output-1",
+        "targetHandle": "input_text"
+      }
+    ]
+  },
+  "version": "1.0.0",
+  "metadata": {
+    "author": "Codemate-Hub",
+    "tags": ["code-generation", "ollama", "basic"],
+    "created": "2024-12-16"
+  }
+}
