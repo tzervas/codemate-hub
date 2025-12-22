@@ -1,7 +1,66 @@
 # Changelog
 
-_Last updated: 2025-12-13_
+_Last updated: 2025-12-22_
 
+
+## Snapshot 2025-12-22
+
+### Completed Tasks
+
+#### Infrastructure Tracker
+_(unchanged since 2025-12-13)_
+
+#### Models & Data Tracker
+_(unchanged since 2025-12-13)_
+
+#### Application & Pipeline Tracker
+_(unchanged since 2025-12-13)_
+
+#### Developer UX Tracker <!-- hash:9d35d885 -->
+- Status: COMPLETED
+
+
+### Pending Tasks
+
+#### Langflow Tracker
+_(unchanged since 2025-12-13)_
+
+#### Enclaves (Zephyr) Tracker
+_(unchanged since 2025-12-13)_
+
+#### Automation & Scripts Tracker
+_(unchanged since 2025-12-13)_
+
+#### Docs & QA Tracker
+_(unchanged since 2025-12-13)_
+
+
+### 👤 Human Changes
+
+**Other**
+- 18b8c61 Merge pull request #14 from tzervas/feature/ci-tooling (#14)
+
+### ⚙️ Bot Changes
+
+**Other**
+- 5e06d61 Fix deprecated VS Code Python linting/formatting settings
+- dbb1983 Mark Task 06: Dev UX as completed
+- 5c1870c Add developer UX improvements: README.dev.md and VS Code workspace config
+- c6d287d Initial plan
+
+### Contributors
+
+**👤 Human**
+- Tyler Zervas (1 commit)
+
+**⚙️ Bot**
+- copilot-swe-agent[bot] (4 commits)
+
+### Areas Touched
+
+- Application
+- Documentation
+- Other
 
 ## Snapshot 2025-12-13
 
