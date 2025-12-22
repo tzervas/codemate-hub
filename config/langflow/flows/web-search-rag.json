@@ -1,0 +1,155 @@
+{
+  "name": "Web Search + RAG Pipeline",
+  "description": "Combines web search with RAG for real-time information augmentation",
+  "version": "1.0.0",
+  "tags": ["search", "rag", "web", "augmentation"],
+  "data": {
+    "nodes": [
+      {
+        "id": "ChatInput-1",
+        "type": "ChatInput",
+        "position": { "x": 100, "y": 250 },
+        "data": {
+          "node": {
+            "template": {
+              "input_value": { "value": "" },
+              "sender": { "value": "User" },
+              "should_store_message": { "value": true }
+            },
+            "display_name": "User Query"
+          }
+        }
+      },
+      {
+        "id": "QueryAnalyzer-1",
+        "type": "Prompt",
+        "position": { "x": 350, "y": 250 },
+        "data": {
+          "node": {
+            "template": {
+              "template": {
+                "value": "Analyze this query and determine:\n1. Does it require current/real-time information? (news, prices, weather)\n2. Is it about static knowledge that could be in documents?\n3. Extract key search terms.\n\nQuery: {query}\n\nRespond in JSON:\n{\"needs_web\": bool, \"needs_rag\": bool, \"search_terms\": [\"term1\", \"term2\"]}"
+              }
+            },
+            "display_name": "Query Analyzer"
+          }
+        }
+      },
+      {
+        "id": "SearchAPI-1",
+        "type": "SearchAPI",
+        "position": { "x": 600, "y": 100 },
+        "data": {
+          "node": {
+            "template": {
+              "engine": { "value": "duckduckgo" },
+              "max_results": { "value": 5 },
+              "search_type": { "value": "text" }
+            },
+            "display_name": "Web Search"
+          }
+        }
+      },
+      {
+        "id": "OllamaEmbeddings-1",
+        "type": "OllamaEmbeddings",
+        "position": { "x": 600, "y": 400 },
+        "data": {
+          "node": {
+            "template": {
+              "base_url": { "value": "http://ollama:11434" },
+              "model": { "value": "nomic-embed-text" }
+            },
+            "display_name": "Embeddings"
+          }
+        }
+      },
+      {
+        "id": "Chroma-1",
+        "type": "Chroma",
+        "position": { "x": 600, "y": 250 },
+        "data": {
+          "node": {
+            "template": {
+              "collection_name": { "value": "documents" },
+              "persist_directory": { "value": "/app/chroma_db" },
+              "number_of_results": { "value": 3 }
+            },
+            "display_name": "Document Store"
+          }
+        }
+      },
+      {
+        "id": "ContextMerger-1",
+        "type": "CombineText",
+        "position": { "x": 900, "y": 250 },
+        "data": {
+          "node": {
+            "template": {
+              "delimiter": { "value": "\n\n=== Additional Context ===\n\n" }
+            },
+            "display_name": "Merge Context"
+          }
+        }
+      },
+      {
+        "id": "Prompt-1",
+        "type": "Prompt",
+        "position": { "x": 1150, "y": 250 },
+        "data": {
+          "node": {
+            "template": {
+              "template": {
+                "value": "You are a helpful assistant with access to both web search results and document knowledge.\n\nWeb Search Results:\n{web_context}\n\nDocument Knowledge:\n{doc_context}\n\nUser Question: {question}\n\nProvide a comprehensive answer, citing sources where applicable. If information conflicts, prefer more recent web results for time-sensitive topics."
+              }
+            },
+            "display_name": "Augmented Prompt"
+          }
+        }
+      },
+      {
+        "id": "OllamaModel-1",
+        "type": "OllamaModel",
+        "position": { "x": 1400, "y": 250 },
+        "data": {
+          "node": {
+            "template": {
+              "base_url": { "value": "http://ollama:11434" },
+              "model_name": { "value": "qwen2.5-coder:7b-q4_0" },
+              "temperature": { "value": 0.3 },
+              "num_ctx": { "value": 8192 }
+            },
+            "display_name": "LLM"
+          }
+        }
+      },
+      {
+        "id": "ChatOutput-1",
+        "type": "ChatOutput",
+        "position": { "x": 1650, "y": 250 },
+        "data": {
+          "node": {
+            "template": {
+              "sender_name": { "value": "AI Assistant" },
+              "should_store_message": { "value": true }
+            },
+            "display_name": "Response"
+          }
+        }
+      }
+    ],
+    "edges": [
+      { "source": "ChatInput-1", "target": "QueryAnalyzer-1", "sourceHandle": "message", "targetHandle": "query" },
+      { "source": "QueryAnalyzer-1", "target": "SearchAPI-1", "sourceHandle": "text", "targetHandle": "query" },
+      { "source": "ChatInput-1", "target": "Chroma-1", "sourceHandle": "message", "targetHandle": "search_query" },
+      { "source": "OllamaEmbeddings-1", "target": "Chroma-1", "sourceHandle": "embeddings", "targetHandle": "embedding" },
+      { "source": "SearchAPI-1", "target": "ContextMerger-1", "sourceHandle": "results", "targetHandle": "text1" },
+      { "source": "Chroma-1", "target": "ContextMerger-1", "sourceHandle": "search_results", "targetHandle": "text2" },
+      { "source": "ContextMerger-1", "target": "Prompt-1", "sourceHandle": "combined", "targetHandle": "web_context" },
+      { "source": "Chroma-1", "target": "Prompt-1", "sourceHandle": "search_results", "targetHandle": "doc_context" },
+      { "source": "ChatInput-1", "target": "Prompt-1", "sourceHandle": "message", "targetHandle": "question" },
+      { "source": "Prompt-1", "target": "OllamaModel-1", "sourceHandle": "prompt", "targetHandle": "input" },
+      { "source": "OllamaModel-1", "target": "ChatOutput-1", "sourceHandle": "text", "targetHandle": "input_value" }
+    ]
+  }
+}

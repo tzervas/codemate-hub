@@ -40,11 +40,11 @@ fi
 
 echo ""
 echo "=== Building Images ==="
-log_info "Building app image (this may take several minutes on first run)..."
-if docker compose -f "$PROJECT_ROOT/docker-compose.yml" build app; then
-    log_success "App image built successfully"
+log_info "Building images (this may take several minutes on first run)..."
+if docker compose -f "$PROJECT_ROOT/docker-compose.yml" build; then
+    log_success "Images built successfully"
 else
-    log_error "Failed to build app image"
+    log_error "Failed to build images"
     exit 1
 fi
 

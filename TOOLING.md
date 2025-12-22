@@ -121,6 +121,45 @@ uv add package-name==version
 uv lock
 ```
 
+## Managing Python version with uv
+
+To keep Python versioning consistent, we use `uv` for lockfile generation and sync. The project is pinned to Python 3.12.11 (see `pyproject.toml`), and the devcontainer will run `uv sync` and create a `.venv` during `postCreateCommand`.
+
+We added a convenience script `scripts/uv-python-manage.sh` that:
+- Ensures `uv` is installed (user-local installation if necessary)
+- Runs `uv lock --python <version>` to regenerate `uv.lock`
+- Creates `.venv` and runs `uv sync --python <version>` to populate it
+
+Usage examples:
+
+```bash
+# Lock + sync for the project's pinned Python (default 3.12.11)
+./scripts/uv-python-manage.sh 3.12.11
+
+# Lock + sync for a different Python version (host or devcontainer must have that version)
+./scripts/uv-python-manage.sh 3.12.15
+```
+
+Notes:
+- If you run `uv-python-manage.sh` on your host without the target Python installed, `uv lock` will still update the `uv.lock` file, but `uv sync` may fail; prefer running `uv sync` inside the devcontainer if your host lacks the requested Python.
+- `uv-python-manage.sh` is idempotent and safe to re-run when bumping patch versions.
+
+Devcontainer integration
+------------------------
+
+The devcontainer is configured to call the uv helper during creation and on attach so the `.venv` is created and dependencies are synchronized automatically:
+
+- `devcontainer.json` runs `scripts/postCreateCommand.sh` on create, which calls `scripts/uv-python-manage.sh 3.12.11`.
+- `devcontainer.json` also runs `scripts/uv-python-manage.sh 3.12.11` on attach via `postAttachCommand` to ensure environment is up-to-date when you reconnect.
+
+Recommended devcontainer workflow:
+
+1. Open project in VS Code and choose 'Reopen in Container'.
+2. Wait for the post-create script to finish (it installs `uv`, runs `uv lock`, creates `.venv`, and runs `uv sync`).
+3. The workspace interpreter is set to `/workspace/.venv/bin/python` automatically.
+
+
+
 ## Future Considerations
 
 1. **Optional Dependencies**: Can add `[dev]`, `[test]`, `[docs]` extras to `pyproject.toml`

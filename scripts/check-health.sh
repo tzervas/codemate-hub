@@ -9,7 +9,7 @@
 set -euo pipefail
 
 TIMEOUT=${1:-120}
-SERVICE=${2:-all}  # 'all', 'ollama', 'langflow', or 'app'
+SERVICE=${2:-all}  # 'all', 'ollama', 'langflow', 'app', 'open-webui', 'nginx', 'ingress'
 SLEEP=3
 END=$((SECONDS + TIMEOUT))
 
@@ -55,6 +55,17 @@ if [ "$SERVICE" = "app" ] || [ "$SERVICE" = "all" ]; then
     sleep $SLEEP
   done
   echo "✓ app OK"
+fi
+
+if [ "$SERVICE" = "open-webui" ] || [ "$SERVICE" = "nginx" ] || [ "$SERVICE" = "ingress" ] || [ "$SERVICE" = "all" ]; then
+  while ! check "http://localhost"; do
+    if [ $SECONDS -ge $END ]; then
+      echo "❌ ingress (nginx + open-webui) did not become available in time" >&2
+      exit 1
+    fi
+    sleep $SLEEP
+  done
+  echo "✓ ingress (nginx + open-webui) OK"
 fi
 
 echo "✅ Service checks passed"
