@@ -6,11 +6,7 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from src.pipeline import OllamaClient
-<<<<<<< HEAD
 from src.orchestrator import ChainOrchestrator
-=======
-from src.chain_orchestrator import ChainOrchestrator
->>>>>>> origin/devel
 
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
