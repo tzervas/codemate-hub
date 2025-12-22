@@ -18,8 +18,10 @@ A containerized multi-service platform for running an AI-powered coding assistan
 - **Langflow**: Visual workflow orchestration (port 7860)
 - **Code-Server**: Remote VS Code IDE (port 8080)
 - **App**: Python coding assistant with pipeline runner and task orchestration (port 8000)
+- **Docs**: Self-hosted documentation and wiki (port 8001)
 - **Open-WebUI**: Web interface for LLM interactions (port 3000)
 
+### Observability Stack
 ### Observability Stack
 - **Grafana**: Metrics visualization and dashboards (port 3001)
 - **Prometheus**: Metrics collection and alerting (port 9090)
