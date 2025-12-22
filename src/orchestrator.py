@@ -1,11 +1,9 @@
-<<<<<<< HEAD
 from __future__ import annotations
 import logging
 import yaml
 from typing import Any, Dict, List, Optional
 
 from .pipeline import OllamaClient
-=======
 """
 Task Orchestrator for Agent Coordination
 
@@ -39,18 +37,14 @@ from src.task_manager import (
     TaskPriority,
 )
 
->>>>>>> origin/devel
-
 logger = logging.getLogger(__name__)
 
 
-<<<<<<< HEAD
 class ChainOrchestrator:
     """A robust orchestrator implementing a Manager-Worker-Evaluator loop.
 
     This orchestrator decomposes objectives into tasks, routes them to specialized workers,
     and uses an evaluator for quality control gating.
-=======
 class TaskExecutor:
     """Executes individual tasks with proper signal emission."""
 
@@ -109,12 +103,10 @@ class TaskOrchestrator:
 
     This class manages task execution, dependency resolution, and agent
     coordination using an event-driven approach with signals.
->>>>>>> origin/devel
     """
 
     def __init__(
         self,
-<<<<<<< HEAD
         client: OllamaClient,
         manager_model: str,
         worker_model: str,
@@ -236,7 +228,6 @@ class TaskOrchestrator:
             "iterations": iteration,
             "status": "failed",
         }
-=======
         max_parallel_tasks: int = 4,
         task_manager: Optional[TaskManager] = None,
     ):
@@ -548,4 +539,3 @@ class TaskOrchestrator:
         self._thread_pool.shutdown(wait=True)
         self._emitter.unsubscribe("orchestrator_completion")
         self._emitter.unsubscribe("orchestrator_failure")
->>>>>>> origin/devel
