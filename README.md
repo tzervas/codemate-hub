@@ -407,6 +407,40 @@ All tests run in fixture mode without requiring live Ollama, making them fast an
 docker exec -it coding-assistant bash
 ```
 
+### Branch Management
+
+#### Updating Subsidiary Branches
+
+When `main` receives new commits, subsidiary feature branches may need to be updated to include the latest changes. An automated script is provided for this purpose:
+
+```bash
+# Preview what would be updated (dry-run mode)
+./scripts/update-subsidiary-branches.sh --dry-run
+
+# Execute the branch updates
+./scripts/update-subsidiary-branches.sh
+```
+
+**Features:**
+- Automatically fetches and merges `main` into all subsidiary branches
+- Detects and reports merge conflicts
+- Provides detailed progress reporting
+- Supports dry-run mode for safe testing
+- Rolls back on push failures
+
+**Documentation:**
+- `BRANCH_UPDATE_STRATEGY.md` - Complete update strategy and approach
+- `CONFLICT_RESOLUTION_GUIDE.md` - Step-by-step conflict resolution guide
+- `BRANCH_UPDATE_EXECUTION_SUMMARY.md` - Execution summary and results
+
+**Common Scenarios:**
+
+1. **Clean merge** - Branch updates automatically and pushes
+2. **Conflicts detected** - Merge is aborted, manual resolution required
+3. **Already up-to-date** - Branch is skipped
+
+For branches with conflicts, follow the detailed resolution guide in `CONFLICT_RESOLUTION_GUIDE.md`.
+
 ## Cleanup
 
 Remove all containers, volumes, and unused images:
