@@ -25,20 +25,56 @@ _(unchanged since 2025-12-13)_
 #### Developer UX Tracker <!-- hash:9d35d885 -->
 - Status: COMPLETED
 
+#### Automation & Scripts Tracker <!-- hash:c6a0d2a1 -->
+- Status: ✅ COMPLETE
+- Completion Date: 2025-12-16
+
+Highlights:
+- Subtask 7.1: Script Idempotency Review
+- Enhanced `build.sh` with idempotency checks
+- * Detects if Ollama is already running before starting
+- * Skips Chroma DB initialization if already exists
+- * Added color-coded logging for better UX
+- * Improved error handling with exit codes
+- Enhanced `deploy.sh` with skip-build option
+- * Added `skip-build` mode for faster restarts
+- * Improved error messages with service log display
+- * Added color-coded logging
+- * Better health check integration
+- Enhanced `teardown.sh` with safety improvements
+- * Added --force/-f flag to skip confirmation
+- * Detects if services are running before attempting teardown
+- * Idempotent - safe to run multiple times
+- * Added color-coded logging
+- `model-pull.sh` already idempotent (ollama pull checks for existing models)
+- `check-health.sh` already idempotent (created in Task 01)
+- Subtask 7.2: Environment Variable Safety Checks
+- Enhanced `preflight-check.sh` with comprehensive env var validation
+- * Automatically creates .env from .env.example if missing
+- * Validates required env vars: PASSWORD, OLLAMA_BASE_URL, CHROMA_DB_DIR
+- * Added PASSWORD strength check (warns if < 8 chars)
+- * Improved error messages with actionable guidance
+- * Color-coded output for better readability
+- Created `.env.example` template file
+- * Comprehensive documentation for all env vars
+- * Security notes and best practices
+- * Examples for optional API keys (OpenAI, Anthropic)
+- * Clear separation of required vs optional vars
+- Subtask 7.3: Health Check Script
+- `check-health.sh` already existed (created in Task 01)
+- Provides service-specific health checks
+- Supports timeout configuration
+- Can check individual services or all services
+- Integrated into build.sh and deploy.sh
+
 
 ### Pending Tasks
-
-#### Automation & Scripts Tracker
-_(unchanged since 2025-12-13)_
 
 #### Docs & QA Tracker
 _(unchanged since 2025-12-13)_
 
 
 ### 👤 Human Changes
-
-**Features**
-- 77af8f8 feat(observability): deploy comprehensive Grafana stack with MCP Rust SDK integration
 
 **Fixes**
 - 233e169 fix(deps): update opentelemetry versions to match crewai requirements
@@ -49,6 +85,8 @@ _(unchanged since 2025-12-13)_
 ### 🤖 AI/Agent Changes
 
 **Other**
+- a430dd7 Task 06: Developer UX - workspace configuration and onboarding guide (#23) (#23)
+- 46061ed Add self-hosted documentation infrastructure with MkDocs and automation (#25) (#25)
 - 71fe8f1 Implement Zephyr enclave system for isolated code execution (#22) (#22)
 - a643e82 Add Langflow integration documentation and example workflow templates (#21) (#21)
 - 8bd7530 Implement signal-based agent orchestration with parallel task execution (#19) (#19)
@@ -57,21 +95,23 @@ _(unchanged since 2025-12-13)_
 ### ⚙️ Bot Changes
 
 **Other**
-- 5e06d61 Fix deprecated VS Code Python linting/formatting settings
-- dbb1983 Mark Task 06: Dev UX as completed
-- 5c1870c Add developer UX improvements: README.dev.md and VS Code workspace config
-- c6d287d Initial plan
+- 8dbd3bd Merge origin/devel - integrate Tasks 04-08 changes
+- ede6d3d Merge origin/main into copilot/merge-feature-branches-for-task-07
+- 8ab33cb Fix shellcheck warning: add -r flag to read command in teardown.sh
+- 5a56f0c Add .env.example template file for environment configuration
+- 50d2ffc Complete Task 07: Enhance automation scripts with idempotency and env validation
+- 0ed2ce4 Initial plan
 
 ### Contributors
 
 **👤 Human**
-- Tyler Zervas (3 commits)
+- Tyler Zervas (2 commits)
 
 **🤖 AI/Agent**
-- Copilot (4 commits)
+- Copilot (6 commits)
 
 **⚙️ Bot**
-- copilot-swe-agent[bot] (4 commits)
+- copilot-swe-agent[bot] (6 commits)
 
 ### Areas Touched
 
