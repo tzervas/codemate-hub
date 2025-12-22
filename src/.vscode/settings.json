@@ -1,0 +1,70 @@
+{
+  // Python Configuration
+  "python.defaultInterpreterPath": "/usr/local/bin/python",
+  "python.languageServer": "Pylance",
+  
+  // Format on save
+  "editor.formatOnSave": true,
+  "[python]": {
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": "explicit"
+    },
+    "editor.defaultFormatter": "ms-python.black-formatter"
+  },
+  
+  // Ruff extension settings
+  "ruff.lineLength": 100,
+  "ruff.lint.select": ["E", "F", "W"],
+  
+  // Black formatter extension settings
+  "black-formatter.args": [
+    "--line-length=100",
+    "--target-version=py312"
+  ],
+  
+  // Testing
+  "python.testing.pytestEnabled": true,
+  "python.testing.pytestArgs": [
+    "tests"
+  ],
+  "python.testing.unittestEnabled": false,
+  
+  // Editor settings
+  "editor.rulers": [100],
+  "editor.tabSize": 4,
+  "editor.insertSpaces": true,
+  "files.trimTrailingWhitespace": true,
+  "files.insertFinalNewline": true,
+  
+  // File associations
+  "files.associations": {
+    "*.yaml": "yaml",
+    "Dockerfile*": "dockerfile",
+    "docker-compose*.yml": "dockercompose"
+  },
+  
+  // Exclude from file watcher
+  "files.watcherExclude": {
+    "**/.git/objects/**": true,
+    "**/.git/subtree-cache/**": true,
+    "**/node_modules/**": true,
+    "**/__pycache__/**": true,
+    "**/.pytest_cache/**": true,
+    "**/chroma_db/**": true,
+    "**/ollama_data/**": true,
+    "**/.uv/**": true,
+    "**/.venv/**": true
+  },
+  
+  // Docker
+  "docker.dockerComposeBuild": true,
+  "docker.dockerComposeDetached": true,
+  
+  // Terminal
+  "terminal.integrated.defaultProfile.linux": "bash",
+  
+  // Git
+  "git.autofetch": true,
+  "git.confirmSync": false
+}
