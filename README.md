@@ -1,13 +1,42 @@
 # Dockerized Agentic Coding Assistant
 
-A containerized multi-service platform for running an AI-powered coding assistant with Ollama, Langflow, and a development environment.
+A containerized multi-service platform for running an AI-powered coding assistant with Ollama, Langflow, development environment, and comprehensive observability.
+
+## Features
+
+- **Signal-Based Agent Orchestration**: Event-driven task coordination with parallel/sequential execution
+- **Local LLM Inference**: Ollama-based model serving with GPU/CPU support
+- **Visual Workflows**: Langflow for prompt chain orchestration
+- **Integrated Development**: Code-Server for remote VS Code access
+- **Vector Memory**: Chroma DB for persistent embeddings
 
 ## Services
 
+### Core Services
 - **Ollama**: Local LLM inference engine (port 11434)
 - **Langflow**: Visual workflow orchestration (port 7860)
 - **Code-Server**: Remote VS Code IDE (port 8080)
-- **App**: Python coding assistant with pipeline runner (port 8000)
+- **App**: Python coding assistant with pipeline runner and task orchestration (port 8000)
+- **Open-WebUI**: Web interface for LLM interactions (port 3000)
+
+### Observability Stack
+- **Grafana**: Metrics visualization and dashboards (port 3001)
+- **Prometheus**: Metrics collection and alerting (port 9090)
+- **Loki**: Log aggregation (port 3100)
+- **Tempo**: Distributed tracing (port 3200)
+- **OpenTelemetry Collector**: Unified telemetry pipeline
+- **Node Exporter**: System metrics (port 9100)
+- **cAdvisor**: Container metrics (port 8081)
+
+### MCP Servers (Rust SDK)
+- **filesystem**: File operations
+- **memory**: Persistent key-value store
+- **sqlite**: SQL database operations
+- **fetch**: HTTP requests
+- **github**: GitHub API (optional)
+- **sequential-thinking**: Chain-of-thought reasoning
+- **brave-search**: Web search (optional)
+- **postgres**: PostgreSQL (optional)
 
 ## Quick Start
 
@@ -42,11 +71,26 @@ nano .env
 
 # Or for attached mode with logs:
 ./scripts/deploy.sh attached
+
+# (Optional) Deploy observability stack
+./scripts/deploy-observability.sh start
 ```
 
 ### 4. Access Services
 
 Once deployment is complete:
+
+**Core Services:**
+- **Langflow UI**: http://localhost:7860
+- **Code Server**: http://localhost:8080 (password in .env)
+- **Ollama API**: http://localhost:11434
+- **Open-WebUI**: http://localhost:3000
+
+**Observability (if deployed):**
+- **Grafana**: http://localhost:3001 (admin/admin)
+- **Prometheus**: http://localhost:9090
+- **Loki**: http://localhost:3100
+- **Tempo**: http://localhost:3200
 
 - **Langflow UI**: http://localhost:7860
 - **Code Server**: http://localhost:8080 (password in .env)
@@ -121,6 +165,52 @@ docker-compose down -v
 # Then explicitly remove the chroma_db directory
 rm -rf chroma_db/
 ```
+
+### Observability & Monitoring
+
+#### Deploy Observability Stack
+
+```bash
+# Start monitoring services
+./scripts/deploy-observability.sh start
+
+# Check status
+./scripts/deploy-observability.sh status
+
+# Stop monitoring
+./scripts/deploy-observability.sh stop
+```
+
+#### Access Monitoring Dashboards
+
+- **Grafana**: http://localhost:3001 (admin/admin)
+  - Pre-configured dashboards in "AI Research" folder
+  - AI/ML Model Performance
+  - Vector Database Metrics
+  - Langflow Workflows
+  - System Overview
+
+- **Prometheus**: http://localhost:9090
+  - Raw metrics and custom queries
+  - Alert rules for AI/ML workloads
+
+- **Loki**: http://localhost:3100
+  - Structured log aggregation
+  - Linked to traces via trace_id
+
+- **Tempo**: http://localhost:3200
+  - Distributed tracing
+  - Linked to logs and metrics
+
+#### Key Metrics
+
+- **Inference Performance**: Request latency (p50/p95/p99), throughput, tokens/sec
+- **GPU Usage**: Utilization %, memory usage, temperature
+- **Vector DB**: Query latency, collection sizes, similarity scores, cache hit rate
+- **Workflows**: Flow execution time, node performance, success/error rates
+- **System**: CPU, memory, disk I/O, network, container metrics
+
+For detailed observability documentation, see [docs/OBSERVABILITY.md](docs/OBSERVABILITY.md).
 
 ### Disk Usage & Model Pruning
 
@@ -261,7 +351,13 @@ If ports are already in use:
 
 ## Directory Structure
 
-- `src/`: Python application code (pipeline, memory setup, tools)
+- `src/`: Python application code
+  - `pipeline.py`: Pipeline orchestration
+  - `signals.py`: Signal emitter/consumer system
+  - `task_manager.py`: Task state management
+  - `orchestrator.py`: Task orchestration engine
+  - `agents.py`: Agent management
+  - `orchestration_examples.py`: Usage examples
 - `scripts/`: Deployment and utility scripts
 - `zephyr/`: Enclave runtimes and execution environments
 - `insights/`: Bootstrap data and domain preseeds
@@ -294,6 +390,54 @@ Langflow workflows can complement or replace parts of the Python pipeline. See [
 - Pipeline-to-Langflow mapping
 - Integration strategies
 - Best practices
+- `langflow_data/`: Langflow workspace and flows (persisted)
+- `docs/`: Documentation
+  - `ORCHESTRATION.md`: Signal-based orchestration guide
+- `tests/`: Test suite
+  - `test_signals.py`: Signal system tests
+  - `test_orchestrator.py`: Orchestrator tests
+  - `test_pipeline.py`: Pipeline tests
+
+## Agent Orchestration
+
+The system includes a signal-based agent orchestration framework for coordinating multiple agent tasks with parallel and sequential execution.
+
+### Quick Example
+
+```python
+from src.orchestrator import TaskOrchestrator
+
+orchestrator = TaskOrchestrator(max_parallel_tasks=4)
+
+# Create tasks
+task1_id = orchestrator.create_task(name="Task 1", task_func=lambda: "result1")
+task2_id = orchestrator.create_task(name="Task 2", task_func=lambda: "result2")
+
+# Execute in parallel
+results = orchestrator.execute_tasks_parallel([task1_id, task2_id])
+```
+
+### Features
+
+- **Event-driven coordination**: Signal-based pub-sub for task lifecycle events
+- **Parallel execution**: Thread pool for concurrent task processing
+- **Dependency resolution**: Automatic task ordering based on dependencies
+- **Agent management**: Agent pools with role-based assignment
+- **Priority scheduling**: Task priority levels (LOW, NORMAL, HIGH, CRITICAL)
+
+### Documentation
+
+See `docs/ORCHESTRATION.md` for complete API reference and examples.
+
+### Running Examples
+
+```bash
+# Run all orchestration examples (including next 3 tasks demo)
+python -m src.orchestration_examples
+
+# Run orchestration tests
+python -m pytest tests/test_signals.py tests/test_orchestrator.py -v
+```
 
 ## Development
 
@@ -352,6 +496,40 @@ All tests run in fixture mode without requiring live Ollama, making them fast an
 ```bash
 docker exec -it coding-assistant bash
 ```
+
+### Branch Management
+
+#### Updating Subsidiary Branches
+
+When `main` receives new commits, subsidiary feature branches may need to be updated to include the latest changes. An automated script is provided for this purpose:
+
+```bash
+# Preview what would be updated (dry-run mode)
+./scripts/update-subsidiary-branches.sh --dry-run
+
+# Execute the branch updates
+./scripts/update-subsidiary-branches.sh
+```
+
+**Features:**
+- Automatically fetches and merges `main` into all subsidiary branches
+- Detects and reports merge conflicts
+- Provides detailed progress reporting
+- Supports dry-run mode for safe testing
+- Rolls back on push failures
+
+**Documentation:**
+- `BRANCH_UPDATE_STRATEGY.md` - Complete update strategy and approach
+- `CONFLICT_RESOLUTION_GUIDE.md` - Step-by-step conflict resolution guide
+- `BRANCH_UPDATE_EXECUTION_SUMMARY.md` - Execution summary and results
+
+**Common Scenarios:**
+
+1. **Clean merge** - Branch updates automatically and pushes
+2. **Conflicts detected** - Merge is aborted, manual resolution required
+3. **Already up-to-date** - Branch is skipped
+
+For branches with conflicts, follow the detailed resolution guide in `CONFLICT_RESOLUTION_GUIDE.md`.
 
 ## Cleanup
 

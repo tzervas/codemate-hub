@@ -1,0 +1,130 @@
+{
+  "name": "RAG Pipeline - Document Q&A",
+  "description": "Retrieval-Augmented Generation pipeline for document-based question answering with ChromaDB",
+  "version": "1.0.0",
+  "tags": ["rag", "embeddings", "chroma", "qa"],
+  "data": {
+    "nodes": [
+      {
+        "id": "ChatInput-1",
+        "type": "ChatInput",
+        "position": { "x": 100, "y": 200 },
+        "data": {
+          "node": {
+            "template": {
+              "input_value": { "value": "" },
+              "sender": { "value": "User" },
+              "sender_name": { "value": "User" },
+              "session_id": { "value": "" },
+              "should_store_message": { "value": true }
+            },
+            "display_name": "User Question"
+          }
+        }
+      },
+      {
+        "id": "OllamaEmbeddings-1",
+        "type": "OllamaEmbeddings",
+        "position": { "x": 400, "y": 100 },
+        "data": {
+          "node": {
+            "template": {
+              "base_url": { "value": "http://ollama:11434" },
+              "model": { "value": "nomic-embed-text" },
+              "temperature": { "value": 0.0 }
+            },
+            "display_name": "Embeddings Model"
+          }
+        }
+      },
+      {
+        "id": "Chroma-1",
+        "type": "Chroma",
+        "position": { "x": 400, "y": 300 },
+        "data": {
+          "node": {
+            "template": {
+              "collection_name": { "value": "documents" },
+              "persist_directory": { "value": "/app/chroma_db" },
+              "search_type": { "value": "similarity" },
+              "number_of_results": { "value": 4 }
+            },
+            "display_name": "Vector Store"
+          }
+        }
+      },
+      {
+        "id": "ParseData-1",
+        "type": "ParseData",
+        "position": { "x": 700, "y": 300 },
+        "data": {
+          "node": {
+            "template": {
+              "template": { "value": "Context:\n{text}\n\nMetadata: {metadata}" },
+              "sep": { "value": "\n\n---\n\n" }
+            },
+            "display_name": "Format Context"
+          }
+        }
+      },
+      {
+        "id": "Prompt-1",
+        "type": "Prompt",
+        "position": { "x": 1000, "y": 200 },
+        "data": {
+          "node": {
+            "template": {
+              "template": {
+                "value": "You are a helpful assistant. Use the following context to answer the question. If the answer is not in the context, say you don't know.\n\n{context}\n\nQuestion: {question}\n\nAnswer:"
+              }
+            },
+            "display_name": "RAG Prompt"
+          }
+        }
+      },
+      {
+        "id": "OllamaModel-1",
+        "type": "OllamaModel",
+        "position": { "x": 1300, "y": 200 },
+        "data": {
+          "node": {
+            "template": {
+              "base_url": { "value": "http://ollama:11434" },
+              "model_name": { "value": "qwen2.5-coder:7b-q4_0" },
+              "temperature": { "value": 0.1 },
+              "num_ctx": { "value": 4096 },
+              "num_predict": { "value": 512 }
+            },
+            "display_name": "LLM Response"
+          }
+        }
+      },
+      {
+        "id": "ChatOutput-1",
+        "type": "ChatOutput",
+        "position": { "x": 1600, "y": 200 },
+        "data": {
+          "node": {
+            "template": {
+              "input_value": { "value": "" },
+              "sender": { "value": "Machine" },
+              "sender_name": { "value": "AI Assistant" },
+              "session_id": { "value": "" },
+              "should_store_message": { "value": true }
+            },
+            "display_name": "AI Response"
+          }
+        }
+      }
+    ],
+    "edges": [
+      { "source": "ChatInput-1", "target": "Chroma-1", "sourceHandle": "output", "targetHandle": "search_query" },
+      { "source": "OllamaEmbeddings-1", "target": "Chroma-1", "sourceHandle": "embeddings", "targetHandle": "embedding" },
+      { "source": "Chroma-1", "target": "ParseData-1", "sourceHandle": "search_results", "targetHandle": "data" },
+      { "source": "ParseData-1", "target": "Prompt-1", "sourceHandle": "text", "targetHandle": "context" },
+      { "source": "ChatInput-1", "target": "Prompt-1", "sourceHandle": "message", "targetHandle": "question" },
+      { "source": "Prompt-1", "target": "OllamaModel-1", "sourceHandle": "prompt", "targetHandle": "input" },
+      { "source": "OllamaModel-1", "target": "ChatOutput-1", "sourceHandle": "text", "targetHandle": "input_value" }
+    ]
+  }
+}

@@ -1,0 +1,153 @@
+{
+  "name": "Multi-Agent Orchestrator",
+  "description": "Manager-Worker-Evaluator pattern for complex task decomposition and execution",
+  "version": "1.0.0",
+  "tags": ["agents", "orchestration", "crewai", "manager-worker"],
+  "data": {
+    "nodes": [
+      {
+        "id": "ChatInput-1",
+        "type": "ChatInput",
+        "position": { "x": 100, "y": 300 },
+        "data": {
+          "node": {
+            "template": {
+              "input_value": { "value": "" },
+              "sender": { "value": "User" },
+              "sender_name": { "value": "User" },
+              "should_store_message": { "value": true }
+            },
+            "display_name": "Task Request"
+          }
+        }
+      },
+      {
+        "id": "ManagerAgent-1",
+        "type": "Agent",
+        "position": { "x": 400, "y": 300 },
+        "data": {
+          "node": {
+            "template": {
+              "agent_name": { "value": "Task Manager" },
+              "system_prompt": {
+                "value": "You are a Task Manager responsible for decomposing complex objectives into smaller, tightly-scoped subtasks.\n\nYour responsibilities:\n1. Analyze the incoming request to understand scope and requirements\n2. Break down into 3-5 atomic, actionable subtasks\n3. Identify dependencies between subtasks\n4. Route each subtask to the appropriate specialist worker\n5. Ensure no overlap or gaps in task coverage\n\nOutput format:\n```json\n{\n  \"analysis\": \"Brief analysis of the request\",\n  \"subtasks\": [\n    {\"id\": 1, \"task\": \"...\", \"worker\": \"python|devops|general\", \"depends_on\": []}\n  ]\n}\n```"
+              },
+              "llm_model": { "value": "qwen2.5-coder:7b-q4_0" }
+            },
+            "display_name": "Manager Agent"
+          }
+        }
+      },
+      {
+        "id": "PythonWorker-1",
+        "type": "Agent",
+        "position": { "x": 700, "y": 100 },
+        "data": {
+          "node": {
+            "template": {
+              "agent_name": { "value": "Python Specialist" },
+              "system_prompt": {
+                "value": "You are a Senior Python Developer specializing in:\n- Clean, idiomatic Python code (PEP 8, type hints)\n- Modern tooling (uv, ruff, mypy, pytest)\n- Agentic frameworks (LangChain, CrewAI)\n- API development (FastAPI, Pydantic)\n\nAlways provide:\n- Complete, runnable code\n- Proper error handling\n- Type annotations\n- Docstrings\n- Unit test examples where applicable"
+              },
+              "llm_model": { "value": "qwen2.5-coder:7b-q4_0" },
+              "tools": { "value": ["code_interpreter", "file_system"] }
+            },
+            "display_name": "Python Worker"
+          }
+        }
+      },
+      {
+        "id": "DevOpsWorker-1",
+        "type": "Agent",
+        "position": { "x": 700, "y": 300 },
+        "data": {
+          "node": {
+            "template": {
+              "agent_name": { "value": "DevOps Specialist" },
+              "system_prompt": {
+                "value": "You are a DevOps Engineer specializing in:\n- Docker and container orchestration\n- CI/CD pipelines (GitHub Actions, GitLab CI)\n- Infrastructure as Code\n- Nginx and reverse proxy configuration\n- SSL/TLS and security hardening\n\nAlways provide:\n- Idempotent, reproducible configurations\n- Proper health checks and monitoring\n- Security best practices\n- Clear documentation"
+              },
+              "llm_model": { "value": "qwen2.5-coder:7b-q4_0" },
+              "tools": { "value": ["shell", "file_system"] }
+            },
+            "display_name": "DevOps Worker"
+          }
+        }
+      },
+      {
+        "id": "GeneralWorker-1",
+        "type": "Agent",
+        "position": { "x": 700, "y": 500 },
+        "data": {
+          "node": {
+            "template": {
+              "agent_name": { "value": "General Assistant" },
+              "system_prompt": {
+                "value": "You are a versatile technical assistant capable of:\n- Documentation and technical writing\n- Research and analysis\n- Planning and architecture design\n- Code explanation and debugging\n\nProvide clear, structured responses with examples where helpful."
+              },
+              "llm_model": { "value": "qwen2.5-coder:7b-q4_0" }
+            },
+            "display_name": "General Worker"
+          }
+        }
+      },
+      {
+        "id": "Aggregator-1",
+        "type": "CombineText",
+        "position": { "x": 1000, "y": 300 },
+        "data": {
+          "node": {
+            "template": {
+              "delimiter": { "value": "\n\n---\n\n" }
+            },
+            "display_name": "Aggregate Results"
+          }
+        }
+      },
+      {
+        "id": "EvaluatorAgent-1",
+        "type": "Agent",
+        "position": { "x": 1300, "y": 300 },
+        "data": {
+          "node": {
+            "template": {
+              "agent_name": { "value": "Quality Evaluator" },
+              "system_prompt": {
+                "value": "You are a Quality Evaluator responsible for rigorous review of all work.\n\nEvaluation Criteria:\n1. Completeness: Does the output fully address the original request?\n2. Correctness: Is the code/config syntactically and logically correct?\n3. Quality: Does it follow best practices and conventions?\n4. Documentation: Is it properly documented?\n5. Integration: Will it work with existing systems?\n\nOutput format:\n```json\n{\n  \"approved\": true|false,\n  \"score\": 0-100,\n  \"issues\": [\"issue1\", \"issue2\"],\n  \"suggestions\": [\"improvement1\"],\n  \"final_verdict\": \"APPROVED|NEEDS_REVISION\"\n}\n```\n\nIf NEEDS_REVISION, provide specific actionable feedback."
+              },
+              "llm_model": { "value": "qwen2.5-coder:7b-q4_0" }
+            },
+            "display_name": "Evaluator Agent"
+          }
+        }
+      },
+      {
+        "id": "ChatOutput-1",
+        "type": "ChatOutput",
+        "position": { "x": 1600, "y": 300 },
+        "data": {
+          "node": {
+            "template": {
+              "input_value": { "value": "" },
+              "sender": { "value": "Machine" },
+              "sender_name": { "value": "Orchestrator" },
+              "should_store_message": { "value": true }
+            },
+            "display_name": "Final Output"
+          }
+        }
+      }
+    ],
+    "edges": [
+      { "source": "ChatInput-1", "target": "ManagerAgent-1", "sourceHandle": "message", "targetHandle": "input" },
+      { "source": "ManagerAgent-1", "target": "PythonWorker-1", "sourceHandle": "python_tasks", "targetHandle": "input" },
+      { "source": "ManagerAgent-1", "target": "DevOpsWorker-1", "sourceHandle": "devops_tasks", "targetHandle": "input" },
+      { "source": "ManagerAgent-1", "target": "GeneralWorker-1", "sourceHandle": "general_tasks", "targetHandle": "input" },
+      { "source": "PythonWorker-1", "target": "Aggregator-1", "sourceHandle": "output", "targetHandle": "text1" },
+      { "source": "DevOpsWorker-1", "target": "Aggregator-1", "sourceHandle": "output", "targetHandle": "text2" },
+      { "source": "GeneralWorker-1", "target": "Aggregator-1", "sourceHandle": "output", "targetHandle": "text3" },
+      { "source": "Aggregator-1", "target": "EvaluatorAgent-1", "sourceHandle": "combined", "targetHandle": "input" },
+      { "source": "EvaluatorAgent-1", "target": "ChatOutput-1", "sourceHandle": "output", "targetHandle": "input_value" }
+    ]
+  }
+}

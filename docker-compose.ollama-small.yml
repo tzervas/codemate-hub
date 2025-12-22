@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  ollama-small:
+    image: ollama/ollama:latest
+    container_name: ollama-small
+    ports:
+      - "11435:11434"
+    volumes:
+      - ollama_small_data:/root/.ollama
+    environment:
+      - OLLAMA_NUM_PARALLEL=4
+      - OLLAMA_NUM_THREAD=4
+
+volumes:
+  ollama_small_data: {}
