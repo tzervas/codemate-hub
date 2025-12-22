@@ -18,12 +18,16 @@ __pycache__/
 
 # Editor and OS files
 .DS_Store
-.vscode/
 .idea/
+# Ignore .vscode/ at root, but allow src/.vscode/
+/.vscode/
 
 # Local DBs and volumes
 chroma_db/
 langflow_data/
+
+# Documentation build artifacts
+site/
 
 # Docker / build
 dist/

@@ -207,6 +207,38 @@ services:
       - default
       - ai-monitoring
 
+  docs:
+    # Documentation: Self-hosted MkDocs site with Material theme
+    # Provides comprehensive documentation and API reference
+    # Auto-reloads on documentation source changes
+    build:
+      context: .
+      dockerfile: Dockerfile.docs
+    container_name: docs-site
+    ports:
+      - "8001:8001"
+    volumes:
+      # Mount documentation sources for live reload
+      - ./docs:/docs/docs
+      - ./mkdocs.yml:/docs/mkdocs.yml
+      # Mount Python source for API documentation extraction
+      - ./src:/docs/src:ro
+    # Healthcheck ensures documentation server is responsive
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8001 2>/dev/null | grep -q 'MkDocs' || wget -qO- http://localhost:8001 2>/dev/null | grep -q 'Codemate'"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    # Minimal resource requirements for static documentation
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.1'
+          memory: 128M
+
 volumes:
   ollama_data:
   chroma_db:

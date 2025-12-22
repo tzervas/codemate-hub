@@ -176,6 +176,34 @@ jobs:
           uv run python -m pytest tests/test_pipeline.py -v --tb=short
           echo "✓ All pipeline tests passed"
 
+  orchestration-tests:
+    name: Orchestration System Tests
+    runs-on: ubuntu-24.04
+    needs: [python-checks]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Python toolchain
+        uses: ./.github/actions/setup-python-toolchain
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          uv-version: ${{ env.UV_VERSION }}
+      
+      - name: Sync dependencies with uv (tests)
+        run: |
+          uv sync --python ${{ env.PYTHON_VERSION }} --extra dev
+      
+      - name: Run signal system tests
+        run: |
+          uv run python -m pytest tests/test_signals.py -v --tb=short
+          echo "✓ Signal system tests passed"
+      
+      - name: Run orchestrator tests
+        run: |
+          uv run python -m pytest tests/test_orchestrator.py -v --tb=short
+          echo "✓ Orchestrator tests passed"
+
   smoke-test:
     name: Smoke Test
     runs-on: ubuntu-24.04

@@ -1,0 +1,176 @@
+{
+  "name": "Code Review with Context",
+  "description": "Review code with contextual understanding and provide improvement suggestions",
+  "data": {
+    "nodes": [
+      {
+        "id": "input-code",
+        "type": "TextInput",
+        "position": {"x": 100, "y": 150},
+        "data": {
+          "node": {
+            "template": {
+              "input_text": {
+                "value": "",
+                "type": "str",
+                "required": true,
+                "placeholder": "Paste the code to review",
+                "name": "input_text"
+              }
+            },
+            "description": "Code to be reviewed",
+            "base_classes": ["str"]
+          },
+          "type": "TextInput"
+        }
+      },
+      {
+        "id": "input-context",
+        "type": "TextInput",
+        "position": {"x": 100, "y": 300},
+        "data": {
+          "node": {
+            "template": {
+              "input_text": {
+                "value": "",
+                "type": "str",
+                "required": false,
+                "placeholder": "Review focus (e.g., security, performance, style)",
+                "name": "input_text"
+              }
+            },
+            "description": "Review context and requirements",
+            "base_classes": ["str"]
+          },
+          "type": "TextInput"
+        }
+      },
+      {
+        "id": "prompt-review",
+        "type": "PromptTemplate",
+        "position": {"x": 400, "y": 200},
+        "data": {
+          "node": {
+            "template": {
+              "template": {
+                "value": "You are an expert code reviewer. Review the following code with focus on: {context}\n\nCode to review:\n```\n{code}\n```\n\nProvide a structured review covering:\n1. Overall assessment\n2. Specific issues found\n3. Suggestions for improvement\n4. Security concerns (if any)\n5. Performance considerations",
+                "type": "str",
+                "required": true,
+                "name": "template"
+              },
+              "code": {
+                "value": "",
+                "type": "str",
+                "required": true,
+                "name": "code"
+              },
+              "context": {
+                "value": "code quality, security, and best practices",
+                "type": "str",
+                "required": false,
+                "name": "context"
+              }
+            },
+            "description": "Structured code review prompt",
+            "base_classes": ["str"]
+          },
+          "type": "PromptTemplate"
+        }
+      },
+      {
+        "id": "ollama-review",
+        "type": "OllamaModel",
+        "position": {"x": 700, "y": 200},
+        "data": {
+          "node": {
+            "template": {
+              "base_url": {
+                "value": "http://ollama:11434",
+                "type": "str",
+                "required": true,
+                "name": "base_url"
+              },
+              "model": {
+                "value": "qwen2.5-coder:7b-q4_0",
+                "type": "str",
+                "required": true,
+                "name": "model"
+              },
+              "temperature": {
+                "value": 0.2,
+                "type": "float",
+                "required": false,
+                "name": "temperature"
+              },
+              "prompt": {
+                "value": "",
+                "type": "str",
+                "required": true,
+                "name": "prompt"
+              }
+            },
+            "description": "Ollama LLM for code review",
+            "base_classes": ["BaseLLM"]
+          },
+          "type": "OllamaModel"
+        }
+      },
+      {
+        "id": "output-review",
+        "type": "TextOutput",
+        "position": {"x": 1000, "y": 200},
+        "data": {
+          "node": {
+            "template": {
+              "input_text": {
+                "value": "",
+                "type": "str",
+                "required": true,
+                "name": "input_text"
+              }
+            },
+            "description": "Code review output",
+            "base_classes": ["str"]
+          },
+          "type": "TextOutput"
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "edge-1",
+        "source": "input-code",
+        "sourceHandle": "output",
+        "target": "prompt-review",
+        "targetHandle": "code"
+      },
+      {
+        "id": "edge-2",
+        "source": "input-context",
+        "sourceHandle": "output",
+        "target": "prompt-review",
+        "targetHandle": "context"
+      },
+      {
+        "id": "edge-3",
+        "source": "prompt-review",
+        "sourceHandle": "output",
+        "target": "ollama-review",
+        "targetHandle": "prompt"
+      },
+      {
+        "id": "edge-4",
+        "source": "ollama-review",
+        "sourceHandle": "output",
+        "target": "output-review",
+        "targetHandle": "input_text"
+      }
+    ]
+  },
+  "version": "1.0.0",
+  "metadata": {
+    "author": "Codemate-Hub",
+    "tags": ["code-review", "ollama", "analysis"],
+    "created": "2024-12-16"
+  }
+}
