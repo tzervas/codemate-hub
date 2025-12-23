@@ -1,0 +1,69 @@
+name: Auto-Update Changelog
+
+on:
+  push:
+    branches: [ main, master ]
+    paths:
+      - 'trackers/**'
+      - 'CHANGELOG.md'
+
+permissions:
+  contents: write
+
+env:
+  PYTHON_VERSION: '3.12.11'
+  UV_VERSION: '0.7.18'
+
+jobs:
+  update-changelog:
+    name: Auto-update CHANGELOG.md
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Need full history for git-based changelog generation
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Setup Python toolchain
+        uses: ./.github/actions/setup-python-toolchain
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          uv-version: ${{ env.UV_VERSION }}
+      
+      - name: Sync dependencies with uv
+        run: |
+          uv sync --python ${{ env.PYTHON_VERSION }} --extra dev
+      
+      - name: Check if changelog needs update
+        id: check
+        run: |
+          if uv run python tools/chngbrgr.py --check --no-git; then
+            echo "needs_update=false" >> $GITHUB_OUTPUT
+            echo "✓ CHANGELOG.md is current"
+          else
+            echo "needs_update=true" >> $GITHUB_OUTPUT
+            echo "⚠ CHANGELOG.md needs update"
+          fi
+      
+      - name: Generate updated changelog
+        if: steps.check.outputs.needs_update == 'true'
+        run: |
+          uv run python tools/chngbrgr.py --no-git
+          echo "✓ CHANGELOG.md regenerated"
+      
+      - name: Commit and push if changed
+        if: steps.check.outputs.needs_update == 'true'
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          
+          if git diff --quiet CHANGELOG.md; then
+            echo "No changes to commit"
+          else
+            git add CHANGELOG.md
+            git commit -m "chore: auto-update CHANGELOG.md from trackers
+
+[skip ci]"
+            git push
+            echo "✓ CHANGELOG.md updated and pushed"
+          fi
