@@ -28,11 +28,58 @@ _(unchanged since 2025-12-22)_
 #### Automation & Scripts Tracker
 _(unchanged since 2025-12-22)_
 
+#### Docs & QA Tracker <!-- hash:8a7d4b2c -->
+- Status: ✅ COMPLETE
+- Completion Date: 2025-12-23
+
+Highlights:
+- Subtask 8.1: Expand README.md with Dev and Production Examples
+  - Added Local Development Workflow (6-step guide: setup, code editing, testing, debugging, model changes, iteration)
+  - Added Production Deployment guide (prerequisites, setup, security, monitoring, maintenance, scaling)
+  - Added comprehensive Testing Strategy section (organization, categories, CI, writing tests, pre-commit)
+  - Updated dependency management to reference TOOLING.md and `uv` usage
+  - README expanded from 764 to 1200+ lines
+- Subtask 8.2: Add Integration/Smoke Tests
+  - Created `tests/integration/` directory with 3 test modules
+  - `test_docker_services.py`: 8 test classes, 15 tests (container health, persistence, recovery)
+  - `test_api_endpoints.py`: 5 test classes, 20 tests (API connectivity, performance, service communication)
+  - `test_end_to_end.py`: 5 test classes, 25 tests (full stack validation, resilience, documentation)
+  - Total: 60+ integration tests covering all critical paths
+  - Updated `pyproject.toml` with pytest markers (integration, slow)
+  - Added pytest-cov and requests to dev dependencies
+  - Enhanced `scripts/test-integration.sh` to run Python integration tests
+  - Created `scripts/run-tests.sh` with multiple test modes (unit, integration, quick, slow, all, coverage)
+- Subtask 8.3: Release Checklist and Model Versioning
+  - Created `RELEASE_CHECKLIST.md` (11,500 chars): pre-release, release, post-release, hotfix, rollback procedures
+  - Created `docs/MODEL_VERSIONS.md` (9,500 chars): model history, selection criteria, update procedures, benchmarks
+  - Documented versioning strategy and artifact management
+  - Added release templates and checklists
+
+Files Created:
+- `tests/integration/__init__.py`
+- `tests/integration/test_docker_services.py` (8,947 chars)
+- `tests/integration/test_api_endpoints.py` (11,495 chars)
+- `tests/integration/test_end_to_end.py` (13,345 chars)
+- `scripts/run-tests.sh` (2,495 chars)
+- `RELEASE_CHECKLIST.md` (11,539 chars)
+- `docs/MODEL_VERSIONS.md` (9,482 chars)
+
+Files Modified:
+- `README.md` (+543 lines: dev workflow, production deployment, testing strategy)
+- `pyproject.toml` (+6 lines: pytest markers, dev dependencies)
+- `scripts/test-integration.sh` (+27 lines: Python test integration)
+- `trackers/tasks/08-docs-qa.md` (marked complete with detailed summary)
+- `trackers/PLAN.md` (all milestones complete, ready for v0.4.0 release)
+
+Total Lines of Code: ~600 lines added/modified
+Total Documentation: 21,000+ characters added
+
+**Project Status: 🎉 ALL MILESTONES COMPLETE - Ready for v0.4.0 release**
+
 
 ### Pending Tasks
 
-#### Docs & QA Tracker
-_(unchanged since 2025-12-13)_
+_None - all tasks complete_
 
 ## Snapshot 2025-12-22
 
