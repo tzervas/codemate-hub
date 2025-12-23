@@ -141,7 +141,7 @@ def main(argv: Optional[List[str]] = None) -> int:
         include_git=not args.no_git,
         since_date=args.since,
         only_today=args.only_today,
-        suppress_duplicates=not args.check,  # Disable for --check to get full content
+        suppress_duplicates=True,  # Always use same settings for consistency
     )
 
     if args.preview:

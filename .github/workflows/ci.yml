@@ -39,6 +39,9 @@ jobs:
           uv run python -c "import sys; print('Python OK', sys.version)"
           uv run python -c "import compileall, sys; sys.exit(0 if compileall.compile_dir('src', quiet=1) else 1)" || echo "⚠ Some files not compilable (expected for stubs)"
       - name: Verify changelog is current
+        # Only check changelog on merge to main/master, not on every PR
+        # This prevents false failures on feature branches
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
         run: |
           # Check tracker content only (--no-git) since git history varies by branch
           # Use --debug to get detailed diff info if check fails

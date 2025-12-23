@@ -40,6 +40,11 @@ from src.task_manager import (
 logger = logging.getLogger(__name__)
 
 
+class ChainOrchestrator:
+    """A robust orchestrator implementing a Manager-Worker-Evaluator loop.
+
+    This orchestrator decomposes objectives into tasks, routes them to specialized workers,
+    and uses an evaluator for quality control gating.
 class TaskExecutor:
     """Executes individual tasks with proper signal emission."""
 
