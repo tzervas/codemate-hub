@@ -627,10 +627,358 @@ python -m pytest tests/test_signals.py tests/test_orchestrator.py -v
 
 ## Development
 
+### Local Development Workflow
+
+This section covers the typical development workflow when working on codemate-hub locally.
+
+#### 1. Initial Setup for Development
+
+```bash
+# Clone the repository
+git clone https://github.com/tzervas/codemate-hub.git
+cd codemate-hub
+
+# Copy and configure environment
+cp .env.example .env
+nano .env  # Set PASSWORD and other required vars
+
+# Run preflight checks
+./scripts/preflight-check.sh
+
+# Build and deploy
+./scripts/build.sh
+./scripts/deploy.sh
+```
+
+#### 2. Working with the Application Code
+
+**Edit code locally** - The `src/` directory is mounted into the container, so changes are reflected immediately:
+
+```bash
+# Edit files locally (e.g., with VS Code)
+code src/pipeline.py
+
+# Test changes in container without rebuild
+docker exec coding-assistant python src/pipeline.py
+
+# Or access code-server
+# http://localhost:8080 (password from .env)
+```
+
+**Hot reload workflow:**
+```bash
+# For rapid iteration, keep the logs open
+docker-compose logs -f app
+
+# Make changes to src/ files
+# Restart only the app service
+docker-compose restart app
+```
+
+#### 3. Running Tests During Development
+
+```bash
+# Run unit tests (fast, no services needed)
+pytest tests/test_signals.py tests/test_orchestrator.py -v
+
+# Run pipeline tests in fixture mode
+pytest tests/test_pipeline.py -v
+
+# Run enclave tests
+pytest tests/test_enclave.py tests/test_enclave_tool.py -v
+
+# Run all tests
+pytest tests/ -v
+
+# Run with coverage
+pytest tests/ --cov=src --cov-report=html
+```
+
+#### 4. Debugging
+
+**Python debugger in container:**
+```bash
+# Access container shell
+docker exec -it coding-assistant bash
+
+# Install debugging tools if needed
+pip install ipdb
+
+# Add breakpoint in code: import ipdb; ipdb.set_trace()
+# Run the script
+python src/pipeline.py
+```
+
+**View container logs:**
+```bash
+# All services
+docker-compose logs -f
+
+# Specific service
+docker-compose logs -f app
+docker-compose logs -f ollama
+
+# Last 100 lines
+docker-compose logs --tail=100 app
+```
+
+#### 5. Testing Model Changes
+
+```bash
+# Pull a new model to test
+./scripts/model-pull.sh codellama:7b
+
+# Test model availability
+curl http://localhost:11434/api/tags
+
+# Update src/memory_setup.py if changing embedding model
+# Line 60: embedding_model = "your-new-model:tag"
+
+# Reinitialize embeddings
+docker exec coding-assistant python src/memory_setup.py
+```
+
+#### 6. Clean Iteration Cycle
+
+```bash
+# Quick restart without rebuild (preserves data)
+docker-compose restart app
+
+# Full restart with rebuild (when dependencies change)
+./scripts/deploy.sh skip-build  # if built already
+# or
+./scripts/deploy.sh  # full rebuild
+
+# Nuclear option: clean slate
+./scripts/teardown.sh --force
+./scripts/build.sh
+./scripts/deploy.sh
+```
+
+### Production Deployment
+
+This section covers deploying codemate-hub in a production environment.
+
+#### Prerequisites for Production
+
+- Linux server (Ubuntu 20.04+ or RHEL 8+ recommended)
+- Docker 24.0+ and Docker Compose v2.20+
+- Minimum 16GB RAM, 50GB disk space
+- Optional: NVIDIA GPU with nvidia-docker for acceleration
+- Firewall configured for ports: 11434, 7860, 8080, 8000
+
+#### Production Setup Steps
+
+**1. Server Preparation**
+
+```bash
+# Update system
+sudo apt update && sudo apt upgrade -y
+
+# Install Docker (if not installed)
+curl -fsSL https://get.docker.com -o get-docker.sh
+sudo sh get-docker.sh
+
+# Install Docker Compose
+sudo apt install docker-compose-plugin
+
+# Add user to docker group
+sudo usermod -aG docker $USER
+newgrp docker
+
+# Verify installation
+docker --version
+docker compose version
+```
+
+**2. Configure for Production**
+
+```bash
+# Clone repository
+git clone https://github.com/tzervas/codemate-hub.git
+cd codemate-hub
+
+# Create production environment file
+cp .env.example .env
+
+# Set secure production values
+nano .env
+```
+
+**Production .env requirements:**
+```bash
+# Strong password (16+ characters)
+PASSWORD="your-secure-production-password-here"
+
+# Production URLs (use internal DNS if available)
+OLLAMA_BASE_URL="http://ollama:11434"
+CHROMA_DB_DIR="/app/chroma_db"
+
+# Optional: External API keys for hybrid deployments
+OPENAI_API_KEY="sk-..."
+ANTHROPIC_API_KEY="sk-ant-..."
+
+# Performance tuning (adjust based on server specs)
+OLLAMA_NUM_PARALLEL=8
+OLLAMA_NUM_THREAD=8
+```
+
+**3. Security Hardening**
+
+```bash
+# Restrict .env file permissions
+chmod 600 .env
+
+# Set up firewall rules (example with ufw)
+sudo ufw allow 22/tcp     # SSH
+sudo ufw allow 8080/tcp   # Code-server (consider VPN instead)
+sudo ufw allow 11434/tcp  # Ollama API (internal only)
+sudo ufw enable
+
+# For production, consider:
+# - Using nginx reverse proxy with SSL
+# - Restricting code-server access to VPN
+# - Using Docker secrets for sensitive values
+```
+
+**4. Deploy with Observability**
+
+```bash
+# Run preflight checks
+./scripts/preflight-check.sh
+
+# Build images and initialize
+./scripts/build.sh
+
+# Deploy core services
+./scripts/deploy.sh
+
+# Deploy monitoring stack
+./scripts/deploy-observability.sh start
+
+# Verify health
+./scripts/check-health.sh 180
+```
+
+**5. Production Monitoring**
+
+```bash
+# Access Grafana dashboards
+# http://your-server:3001 (admin/admin - change on first login)
+
+# Key dashboards:
+# - AI/ML Model Performance
+# - Vector Database Metrics
+# - System Overview
+
+# Check service status
+docker-compose ps
+
+# Monitor resource usage
+docker stats
+
+# View logs
+docker-compose logs -f --tail=100
+```
+
+#### Production Maintenance
+
+**Regular tasks:**
+
+```bash
+# Weekly: Check disk usage
+docker system df
+./scripts/model-prune.sh list-unused
+
+# Monthly: Update images
+git pull origin main
+./scripts/deploy.sh
+
+# As needed: Backup data
+tar -czf backup-$(date +%Y%m%d).tar.gz chroma_db/ langflow_data/
+
+# As needed: Rotate logs
+docker-compose logs --no-log-prefix > logs-$(date +%Y%m%d).log
+```
+
+**Disaster Recovery:**
+
+```bash
+# Stop services
+docker-compose down
+
+# Restore from backup
+tar -xzf backup-20231215.tar.gz
+
+# Restart services
+./scripts/deploy.sh skip-build
+```
+
+#### Scaling for Production
+
+**Horizontal scaling options:**
+
+1. **Multiple Ollama instances** (load balancing)
+   - Deploy ollama on separate nodes
+   - Use nginx/HAProxy to distribute requests
+   - Update OLLAMA_BASE_URL to point to load balancer
+
+2. **Distributed Chroma** (high availability)
+   - Use Chroma client-server mode
+   - Deploy Chroma server separately
+   - Point app containers to Chroma server
+
+3. **Container orchestration** (Kubernetes, Docker Swarm)
+   - Convert docker-compose.yml to K8s manifests
+   - Use persistent volume claims for data
+   - Deploy with StatefulSets for stateful services
+
+**Performance tuning:**
+
+```yaml
+# In docker-compose.yml, adjust resource limits:
+services:
+  ollama:
+    deploy:
+      resources:
+        limits:
+          cpus: '8'
+          memory: 16G
+        reservations:
+          cpus: '4'
+          memory: 8G
+          
+  app:
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 4G
+```
+
 ### Adding Dependencies
 
-1. Update `requirements.txt`
-2. Rebuild: `docker-compose build app`
+**⚠️ IMPORTANT: Use `uv` for dependency management, NOT `pip` directly.**
+
+See [TOOLING.md](TOOLING.md) for complete dependency management guide.
+
+```bash
+# Add a new dependency
+# 1. Edit pyproject.toml dependencies array
+nano pyproject.toml
+
+# 2. Regenerate lock file
+uv lock --python 3.12.11
+
+# 3. Sync locally (optional, for local testing)
+uv sync --python 3.12.11
+
+# 4. Rebuild container
+docker-compose build app
+
+# 5. Deploy
+docker-compose up -d app
+```
 
 ### Customizing Pipeline
 
@@ -676,6 +1024,199 @@ pytest tests/test_pipeline.py::TestPipelineSuccess -v
 - ✅ Malformed schema: Validation failure, memory untouched, failure logged
 
 All tests run in fixture mode without requiring live Ollama, making them fast and deterministic for CI/CD.
+
+### Testing Strategy
+
+The project uses a multi-layered testing approach to ensure reliability at all levels.
+
+#### Test Organization
+
+```
+tests/
+├── test_signals.py           # Unit: Signal emitter/consumer system
+├── test_orchestrator.py      # Unit: Task orchestration engine
+├── test_pipeline.py          # Unit: Pipeline with fixtures
+├── test_enclave.py           # Unit: Enclave core functionality
+├── test_enclave_tool.py      # Integration: Enclave tool API
+└── fixtures/                 # Test data and mocks
+```
+
+#### Running Tests
+
+**Unit Tests** (fast, no external dependencies):
+
+```bash
+# All unit tests
+pytest tests/ -v
+
+# Specific test file
+pytest tests/test_signals.py -v
+
+# Specific test class
+pytest tests/test_orchestrator.py::TestTaskOrchestrator -v
+
+# Specific test function
+pytest tests/test_pipeline.py::TestPipelineSuccess::test_successful_generation -v
+
+# With coverage report
+pytest tests/ --cov=src --cov-report=html --cov-report=term
+open htmlcov/index.html
+```
+
+**Integration Tests** (requires running services):
+
+```bash
+# Quick validation (docker-compose config + build check)
+./scripts/test-integration.sh
+
+# Full integration test (starts services, runs health checks)
+./scripts/test-integration.sh full
+
+# Or run integration tests directly
+pytest tests/integration/ -v --integration
+```
+
+**Smoke Tests** (end-to-end validation):
+
+```bash
+# Validate Ollama health configuration
+./scripts/test-ollama-health.sh
+
+# Full smoke test (all services)
+./scripts/check-health.sh 120
+
+# Test specific endpoints
+curl http://localhost:11434/api/tags
+curl http://localhost:7860
+```
+
+#### Test Categories
+
+1. **Unit Tests** - Test individual components in isolation
+   - No external dependencies
+   - Fast execution (< 1 second per test)
+   - Use fixtures and mocks
+   - Examples: test_signals.py, test_orchestrator.py
+
+2. **Integration Tests** - Test component interactions
+   - May require services (Ollama, Chroma)
+   - Moderate execution time (seconds to minutes)
+   - Test real API calls and data flow
+   - Examples: test_enclave_tool.py
+
+3. **Smoke Tests** - Validate deployment health
+   - Require full service deployment
+   - Test critical paths end-to-end
+   - Run after deployment
+   - Scripts: test-integration.sh, check-health.sh
+
+#### Continuous Integration
+
+The project uses GitHub Actions for CI/CD. Tests run automatically on:
+
+- Pull requests to `main`
+- Pushes to `main`
+- Scheduled nightly builds
+
+**CI test matrix:**
+```yaml
+# Unit tests (always)
+pytest tests/ --ignore=tests/integration/
+
+# Integration tests (if services healthy)
+./scripts/test-integration.sh full
+
+# Smoke tests (deployment validation)
+./scripts/check-health.sh 180
+```
+
+#### Writing New Tests
+
+**Unit test template:**
+
+```python
+# tests/test_my_feature.py
+import pytest
+from src.my_module import MyClass
+
+class TestMyFeature:
+    def setup_method(self):
+        """Setup before each test method"""
+        self.instance = MyClass()
+    
+    def test_basic_functionality(self):
+        """Test description"""
+        result = self.instance.my_method()
+        assert result == expected_value
+    
+    def test_error_handling(self):
+        """Test error conditions"""
+        with pytest.raises(ValueError):
+            self.instance.my_method(invalid_input)
+```
+
+**Integration test template:**
+
+```python
+# tests/integration/test_my_integration.py
+import pytest
+import requests
+
+@pytest.mark.integration
+class TestMyIntegration:
+    def test_api_endpoint(self):
+        """Test real API calls"""
+        response = requests.get("http://localhost:11434/api/tags")
+        assert response.status_code == 200
+        assert "models" in response.json()
+```
+
+#### Test Configuration
+
+**pytest configuration** (`pyproject.toml`):
+
+```toml
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"
+python_classes = "Test*"
+python_functions = "test_*"
+markers = [
+    "integration: Integration tests requiring services",
+    "slow: Slow tests that may take minutes",
+]
+```
+
+**Run tests by marker:**
+
+```bash
+# Skip integration tests
+pytest tests/ -v -m "not integration"
+
+# Only integration tests
+pytest tests/ -v -m integration
+
+# Skip slow tests
+pytest tests/ -v -m "not slow"
+```
+
+#### Pre-commit Testing
+
+Before committing code, run:
+
+```bash
+# Format code
+black src/ tests/
+
+# Lint code
+ruff src/ tests/
+
+# Run unit tests
+pytest tests/ -v --ignore=tests/integration/
+
+# Run integration tests (if services running)
+pytest tests/integration/ -v -m integration
+```
 
 ### Accessing Application Container
 
