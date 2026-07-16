@@ -16,6 +16,12 @@ echo "Building application..."
 echo ""
 echo "=== Deploying Services ==="
 
+# Ensure shared monitoring network exists (also created by compose; idempotent).
+if ! docker network inspect ai-monitoring &> /dev/null; then
+    echo "Creating docker network ai-monitoring..."
+    docker network create ai-monitoring
+fi
+
 if [ "$MODE" = "detached" ]; then
     echo "Starting services in background..."
     docker compose -f "$PROJECT_ROOT/docker-compose.yml" up -d
