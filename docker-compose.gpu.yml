@@ -1,10 +1,22 @@
+# GPU overlay for Ollama.
+# Usage:
+#   docker compose -f docker-compose.yml -f docker-compose.gpu.yml up -d
+# Requires nvidia-container-toolkit and working `nvidia-smi` on the host.
 version: '3.8'
 
 services:
   ollama:
+    runtime: nvidia
     environment:
       - NVIDIA_VISIBLE_DEVICES=all
     # Request GPUs from the host (requires nvidia-container-toolkit)
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
     device_requests:
       - driver: nvidia
         count: all

@@ -1,8 +1,9 @@
 # Environment and secrets
 .env
 .env.*
-!.env.ci        # CI environment - safe to commit (test values only)
-!.env.example   # Example env template - safe to commit
+# Allow committed templates (negations must not share a line with # comments)
+!.env.ci
+!.env.example
 .secrets
 
 # Python artifacts

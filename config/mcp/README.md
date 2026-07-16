@@ -6,26 +6,35 @@ This directory contains MCP server configurations for enhanced tool capabilities
 
 MCP (Model Context Protocol) provides a standardized way for AI assistants to interact with external tools and services. This configuration includes both official MCP servers and custom tools.
 
-## Official MCP Servers
+## Status
 
-### Enabled by Default
+`servers.json` is a **configuration sketch** for planned MCP server processes.
+There is **no** `src/mcp_client.py` yet, and `src/tools/__init__.py` does not
+export `load_mcp_tools`. Custom tools under `src/tools/` (code_executor,
+document_processor, git_ops, vector_search) are the implemented path today.
+
+Binary names marked `sdk: "rust"` in `servers.json` assume future installation
+via the Model Context Protocol servers project; they are not built by this repo.
+
+## Configured MCP servers (from servers.json)
+
+### Enabled by default (in config only)
 
 | Server | Description | Use Case |
 |--------|-------------|----------|
 | filesystem | File system operations | Read/write project files |
-| github | GitHub API integration | Repository management |
 | memory | Key-value storage | Persistent context |
 | fetch | HTTP requests | Web content retrieval |
 | sqlite | SQLite database | Local data storage |
 | sequential-thinking | Chain-of-thought | Enhanced reasoning |
 
-### Optional (Require Configuration)
+### Optional (require configuration; disabled in servers.json)
 
 | Server | Description | Requirements |
 |--------|-------------|--------------|
+| github | GitHub API integration | `GITHUB_TOKEN` env var |
 | postgres | PostgreSQL database | `DATABASE_URL` env var |
 | brave-search | Web search | `BRAVE_API_KEY` env var |
-| puppeteer | Browser automation | Chromium installation |
 
 ## Custom Tools
 
@@ -95,20 +104,20 @@ MCP tools can be used in Langflow via custom components:
 2. Create Langflow component wrapper
 3. Add to flow as tool node
 
-### With CrewAI/LangChain
+### With custom tools (implemented today)
 ```python
-from langchain.tools import Tool
-from src.tools import load_mcp_tools
+from src.tools import load_tool, list_available_tools
 
-tools = load_mcp_tools(config_path="config/mcp/servers.json")
+print(list_available_tools())
+executor = load_tool("code_executor")
 ```
 
-### Direct Usage
+### Planned MCP client (not implemented)
 ```python
-from src.mcp_client import MCPClient
-
-client = MCPClient(config_path="config/mcp/servers.json")
-result = await client.call_tool("filesystem", "read_file", {"path": "/app/src/app.py"})
+# Future API shape — do not import yet:
+# from src.mcp_client import MCPClient
+# client = MCPClient(config_path="config/mcp/servers.json")
+# result = await client.call_tool("filesystem", "read_file", {"path": "/app/src/app.py"})
 ```
 
 ## Security Considerations

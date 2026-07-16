@@ -52,7 +52,7 @@ if command -v nvidia-smi &> /dev/null; then
     echo "✓ NVIDIA GPU detected: $(nvidia-smi --query-gpu=name --format=csv,noheader | head -1)"
     if docker run --rm --runtime=nvidia nvidia/cuda:12.0.0-runtime-ubuntu22.04 nvidia-smi &> /dev/null; then
         echo "  ℹ nvidia-docker appears to be configured"
-        echo "  ℹ To enable GPU: uncomment 'runtime: nvidia' in docker-compose.yml"
+        echo "  ℹ To enable GPU: docker compose -f docker-compose.yml -f docker-compose.gpu.yml up -d"
     else
         echo "  ⚠ NVIDIA GPU found but nvidia-docker may not be configured"
         echo "  ℹ Proceeding with CPU-only mode"

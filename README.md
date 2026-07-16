@@ -7,11 +7,13 @@ A containerized multi-service platform for running an AI-powered coding assistan
 ### Core Services
 - **Ollama**: Local LLM inference engine (port 11434)
 - **Langflow**: Visual workflow orchestration (port 7860)
-- **Code-Server**: Remote VS Code IDE (port 8080)
+- **Code-Server**: Remote VS Code IDE (port 8443 by default; overridable via `CODE_SERVER_PORT`)
 - **App**: Python coding assistant with pipeline runner (port 8000)
 - **Open-WebUI**: Web interface for LLM interactions (port 3000)
+- **Nginx**: Optional ingress on ports 80/443/8888 (see `nginx/`)
 
-### Observability Stack
+### Observability Stack (optional overlay)
+Deploy with `./scripts/deploy-observability.sh start` (creates network `ai-monitoring`):
 - **Grafana**: Metrics visualization and dashboards (port 3001)
 - **Prometheus**: Metrics collection and alerting (port 9090)
 - **Loki**: Log aggregation (port 3100)
@@ -20,15 +22,10 @@ A containerized multi-service platform for running an AI-powered coding assistan
 - **Node Exporter**: System metrics (port 9100)
 - **cAdvisor**: Container metrics (port 8081)
 
-### MCP Servers (Rust SDK)
-- **filesystem**: File operations
-- **memory**: Persistent key-value store
-- **sqlite**: SQL database operations
-- **fetch**: HTTP requests
-- **github**: GitHub API (optional)
-- **sequential-thinking**: Chain-of-thought reasoning
-- **brave-search**: Web search (optional)
-- **postgres**: PostgreSQL (optional)
+### MCP configuration (planned runtime)
+Server definitions live in `config/mcp/servers.json`. Runtime MCP client wiring
+(`src/mcp_client.py`, `load_mcp_tools`) is **not implemented yet**; custom
+Python tools under `src/tools/` are available today.
 
 ## Quick Start
 
@@ -72,21 +69,24 @@ nano .env
 
 Once deployment is complete:
 
-**Core Services:**
+**Core Services (direct ports):**
 - **Langflow UI**: http://localhost:7860
-- **Code Server**: http://localhost:8080 (password in .env)
+- **Code Server**: http://localhost:8443 (password in `.env`; `CODE_SERVER_PORT`)
 - **Ollama API**: http://localhost:11434
 - **Open-WebUI**: http://localhost:3000
+- **App API**: http://localhost:8000
+
+**Via Nginx ingress (when nginx is up):**
+- **Open-WebUI**: http://localhost/
+- **Langflow**: http://localhost/langflow/
+- **Code Server**: http://localhost/code/
+- **App API**: http://localhost/api/
 
 **Observability (if deployed):**
-- **Grafana**: http://localhost:3001 (admin/admin)
+- **Grafana**: http://localhost:3001 (default admin/admin — change for shared hosts)
 - **Prometheus**: http://localhost:9090
 - **Loki**: http://localhost:3100
 - **Tempo**: http://localhost:3200
-
-- **Langflow UI**: http://localhost:7860
-- **Code Server**: http://localhost:8080 (password in .env)
-- **Ollama API**: http://localhost:11434
 
 ## Common Commands
 
@@ -152,9 +152,9 @@ To reset the memory database:
 
 ```bash
 # Stop containers and remove all volumes
-docker-compose down -v
+docker compose down -v
 
-# Then explicitly remove the chroma_db directory
+# Then explicitly remove any host chroma_db directory if present
 rm -rf chroma_db/
 ```
 
@@ -249,23 +249,23 @@ To add additional models to the protected list, edit `scripts/model-prune.sh` an
 ### View Logs
 
 ```bash
-docker-compose logs -f [service]
+docker compose logs -f [service]
 # Examples:
-docker-compose logs -f ollama
-docker-compose logs -f langflow
-docker-compose logs -f app
+docker compose logs -f ollama
+docker compose logs -f langflow
+docker compose logs -f app
 ```
 
 ### Run Pipeline
 
 ```bash
-docker exec app python src/pipeline.py
+docker exec coding-assistant python src/pipeline.py
 ```
 
 ### Stop Services
 
 ```bash
-docker-compose down
+docker compose down
 ```
 
 ### Complete Cleanup
@@ -276,11 +276,18 @@ docker-compose down
 
 ## GPU Support
 
-If you have an NVIDIA GPU and nvidia-docker installed:
+Default `docker-compose.yml` is **CPU-friendly** (GPU lines commented out).
+If you have an NVIDIA GPU and `nvidia-container-toolkit`:
 
-1. Uncomment `runtime: nvidia` in `docker-compose.yml` (ollama service)
-2. Uncomment the `NVIDIA_VISIBLE_DEVICES` environment variable
-3. Redeploy: `./scripts/deploy.sh`
+```bash
+# Preferred: GPU overlay
+docker compose -f docker-compose.yml -f docker-compose.gpu.yml up -d
+
+# Or uncomment runtime/deploy/NVIDIA_VISIBLE_DEVICES under the ollama service
+# in docker-compose.yml, then: ./scripts/deploy.sh
+```
+
+See [docs/GPU_SETUP.md](docs/GPU_SETUP.md) for host toolkit install notes.
 
 To verify GPU is working:
 
@@ -293,14 +300,14 @@ docker exec ollama nvidia-smi
 ### Container won't start
 
 - Run preflight checks: `./scripts/preflight-check.sh`
-- Check logs: `docker-compose logs [service]`
+- Check logs: `docker compose logs [service]`
 - Ensure PASSWORD is set in .env
 
 ### Ollama not responding
 
 - Check if ollama is healthy: `curl http://localhost:11434/api/tags`
 - Verify disk space: `df -h`
-- Check logs: `docker-compose logs ollama`
+- Check logs: `docker compose logs ollama`
 
 ### Models not downloading
 
@@ -312,21 +319,21 @@ docker exec ollama nvidia-smi
 
 - Verify Chroma database exists: `ls -la chroma_db/`
 - Check if memory initialization succeeded: `python src/memory_setup.py`
-- Review logs: `docker-compose logs app`
-- Reset database: `docker-compose down -v chroma_db && docker-compose up`
+- Review logs: `docker compose logs app`
+- Reset database: `docker compose down -v && docker compose up -d`
 
 ### High disk usage from models
 
 - List local models: `docker exec ollama ollama list`
-- Check model sizes: `du -sh ollama_data/`
+- Check model sizes: `docker system df` (models live in the `ollama_data` volume)
 - Preview what can be deleted: `./scripts/model-prune.sh dry-run`
 - Safely prune unused models: `./scripts/model-prune.sh keep-models`
 
 ### GPU not being used
 
-- Verify nvidia-docker is installed: `nvidia-docker --version`
-- Check Ollama logs: `docker-compose logs ollama | grep -i cuda`
-- Ensure `runtime: nvidia` is uncommented in docker-compose.yml
+- Verify toolkit: `nvidia-smi` and nvidia-container-toolkit install
+- Start with GPU overlay: `docker compose -f docker-compose.yml -f docker-compose.gpu.yml up -d ollama`
+- Check Ollama logs: `docker compose logs ollama | grep -i cuda`
 
 ### Port conflicts
 
@@ -345,16 +352,18 @@ If ports are already in use:
 
 - `src/`: Python application code (pipeline, memory setup, tools)
 - `scripts/`: Deployment and utility scripts
-- `zephyr/`: Enclave runtimes and execution environments
+- `config/`: Service configs (ollama, langflow flows, MCP, observability, SSL)
 - `insights/`: Bootstrap data and domain preseeds
-- `langflow_data/`: Langflow workspace and flows (persisted)
+- `zephyr/`: Placeholder mount for future enclave work (Task 05; not implemented)
+- `langflow_data/`: Docker named volume for Langflow workspace (not a git tree path)
+- `trackers/`: Project plan, overview, and task trackers
 
 ## Development
 
 ### Adding Dependencies
 
 1. Update `requirements.txt`
-2. Rebuild: `docker-compose build app`
+2. Rebuild: `docker compose build app`
 
 ### Customizing Pipeline
 
@@ -384,10 +393,12 @@ docker exec coding-assistant python src/pipeline.py
 The pipeline has comprehensive regression tests operating in fixture mode:
 
 ```bash
-# Install test dependencies
-pip install pytest pydantic
+# Preferred: uv (matches CI)
+uv sync --python 3.12.11 --extra dev
+uv run python -m pytest tests/test_pipeline.py -v
 
-# Run all pipeline tests
+# Or with plain pip + venv
+pip install -e ".[dev]"
 pytest tests/test_pipeline.py -v
 
 # Run specific test class
@@ -418,7 +429,7 @@ Remove all containers, volumes, and unused images:
 This will delete stored data (models, embeddings, database). To preserve data, use:
 
 ```bash
-docker-compose down
+docker compose down
 ```
 
 ## GitHub Actions CI/CD & Secrets
@@ -447,7 +458,8 @@ The CI pipeline automatically uses `.env.ci` for testing. Sensitive values are i
 
 ## For More Information
 
-- See `trackers/` for detailed project planning and milestones
-- See `SPEC.md` for technical specifications
-- See `OVERVIEW.md` for architecture overview
+- See [`trackers/`](trackers/) for detailed project planning and milestones
+- See [`trackers/SPEC.md`](trackers/SPEC.md) for technical specifications
+- See [`trackers/OVERVIEW.md`](trackers/OVERVIEW.md) for architecture overview
+- See [`TROUBLESHOOTING.md`](TROUBLESHOOTING.md) for common failures
 

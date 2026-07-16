@@ -27,10 +27,11 @@ fi
 # Test 2: Verify GPU runtime configuration exists
 echo ""
 echo "Test 2: Checking GPU runtime configuration..."
-if grep -q 'runtime: nvidia' "$PROJECT_ROOT/docker-compose.yml"; then
-    echo "✓ GPU runtime is configured"
-elif grep -q '# runtime: nvidia' "$PROJECT_ROOT/docker-compose.yml"; then
-    echo "✓ GPU runtime is optional (commented out for CPU-only)"
+if grep -qE '^[[:space:]]+runtime:[[:space:]]*nvidia' "$PROJECT_ROOT/docker-compose.yml"; then
+    echo "✓ GPU runtime is enabled in docker-compose.yml"
+elif grep -qE '^[[:space:]]*#[[:space:]]*runtime:[[:space:]]*nvidia' "$PROJECT_ROOT/docker-compose.yml" \
+   || [ -f "$PROJECT_ROOT/docker-compose.gpu.yml" ]; then
+    echo "✓ GPU runtime is optional (commented out / docker-compose.gpu.yml overlay)"
 else
     echo "ℹ No GPU runtime specified (CPU-only mode)"
 fi
@@ -79,12 +80,26 @@ fi
 # Test 6: Validate docker-compose YAML syntax
 echo ""
 echo "Test 6: Validating docker-compose.yml syntax..."
-if docker compose -f "$PROJECT_ROOT/docker-compose.yml" config &> /dev/null; then
-    echo "✓ docker-compose.yml is valid"
+if docker compose version &> /dev/null; then
+    if docker compose -f "$PROJECT_ROOT/docker-compose.yml" config &> /dev/null; then
+        echo "✓ docker-compose.yml is valid"
+    else
+        echo "❌ docker-compose.yml has syntax errors"
+        docker compose -f "$PROJECT_ROOT/docker-compose.yml" config
+        exit 1
+    fi
+elif command -v docker-compose &> /dev/null; then
+    if docker-compose -f "$PROJECT_ROOT/docker-compose.yml" config &> /dev/null; then
+        echo "✓ docker-compose.yml is valid (docker-compose v1)"
+    else
+        echo "❌ docker-compose.yml has syntax errors"
+        docker-compose -f "$PROJECT_ROOT/docker-compose.yml" config
+        exit 1
+    fi
 else
-    echo "❌ docker-compose.yml has syntax errors"
-    docker compose -f "$PROJECT_ROOT/docker-compose.yml" config
-    exit 1
+    # CI/dev hosts may have docker without the compose plugin; do not hard-fail.
+    echo "⚠ docker compose not available; skipping YAML validation"
+    echo "  Install Docker Compose v2 plugin or docker-compose standalone for full checks"
 fi
 
 # Test 7: Check for nvidia-docker if GPU is enabled

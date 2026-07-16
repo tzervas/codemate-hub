@@ -4,7 +4,8 @@ env:
   PYTHON_VERSION: '3.12.11'
   UV_VERSION: '0.7.18'
 
-# Manual only — no push/pull_request CI triggers
+# Runs on push/PR to mainline branches, and on manual workflow_dispatch.
+# Jobs target self-hosted [linux, x64, podman] runners.
 on:
   push:
     branches:

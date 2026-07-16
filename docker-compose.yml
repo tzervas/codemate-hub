@@ -49,16 +49,19 @@ services:
     volumes:
       - ollama_data:/root/.ollama
       - ./config/ollama:/config/ollama:ro
-    runtime: nvidia
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: all
-              capabilities: [gpu]
+    # GPU is optional (CPU-only works without the lines below).
+    # Enable with: docker compose -f docker-compose.yml -f docker-compose.gpu.yml up -d
+    # Or uncomment runtime/deploy/NVIDIA_VISIBLE_DEVICES after installing nvidia-container-toolkit.
+    # runtime: nvidia
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: all
+    #           capabilities: [gpu]
     environment:
-      - NVIDIA_VISIBLE_DEVICES=all
+      # - NVIDIA_VISIBLE_DEVICES=all
       - OLLAMA_NUM_PARALLEL=4
       - OLLAMA_NUM_THREAD=8
       - OLLAMA_HOST=0.0.0.0:11434
@@ -219,5 +222,7 @@ volumes:
 networks:
   default:
     name: ai-research-default
+  # Created by this compose file so base deploy works without observability.
+  # Observability stack joins the same named network.
   ai-monitoring:
-    external: true
+    name: ai-monitoring

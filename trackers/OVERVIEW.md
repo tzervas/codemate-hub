@@ -13,12 +13,12 @@ Key runtime concerns
 --------------------
 - Containerized deployment with GPU support for `ollama` (uses `runtime: nvidia` and `NVIDIA_VISIBLE_DEVICES=all`).
 - Persistent volumes: `ollama_data`, `chroma_db`.
-- Local dev workspace exposed into `code-server` and `app` containers via `./src` and `./zephyr` mounts.
+- Local dev workspace exposed into `code-server` and `app` containers via `./src` and `./zephyr` mounts (`zephyr/` is currently a placeholder).
 
 Primary repo areas
 ------------------
 - `src/`: application code (`pipeline.py`, `app.py`, `enclave_tool.py`, `memory_setup.py`)
-- `zephyr/`: enclave code and runtime
+- `zephyr/`: placeholder for future enclave work (Task 05; not implemented)
 - `insights/`: bootstraps and preseeds
 - `scripts/`: build and deployment helpers
 - `personas.yaml`: role presets for agent personas
