@@ -4,20 +4,8 @@ env:
   PYTHON_VERSION: '3.12.11'
   UV_VERSION: '0.7.18'
 
+# Manual only — no push/pull_request CI triggers
 on:
-  push:
-    branches: [ main, master, 'github-init', 'setup/**' ]
-    paths:
-      - 'docker-compose.yml'
-      - 'Dockerfile'
-      - 'requirements.txt'
-      - 'scripts/**'
-      - 'trackers/**'
-      - 'CHANGELOG.md'
-      - '.github/workflows/ci.yml'
-      - 'src/**'
-  pull_request:
-    branches: [ '**' ]
   workflow_dispatch:
 
 jobs:
