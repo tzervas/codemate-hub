@@ -6,12 +6,22 @@ env:
 
 # Manual only — no push/pull_request CI triggers
 on:
+  push:
+    branches:
+      - main
+      - dev
+      - develop
+  pull_request:
+    branches:
+      - main
+      - dev
+      - develop
   workflow_dispatch:
 
 jobs:
   python-checks:
     name: Python Lint & Install
-    runs-on: ubuntu-24.04
+    runs-on: [self-hosted, linux, x64, podman]
     steps:
       - uses: actions/checkout@v4
       - name: Setup Python toolchain
@@ -34,7 +44,7 @@ jobs:
 
   preflight-checks:
     name: Infrastructure Preflight
-    runs-on: ubuntu-24.04
+    runs-on: [self-hosted, linux, x64, podman]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -58,7 +68,7 @@ jobs:
 
   ollama-health-check:
     name: Ollama Health Config
-    runs-on: ubuntu-24.04
+    runs-on: [self-hosted, linux, x64, podman]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -69,7 +79,7 @@ jobs:
 
   yaml-validation:
     name: YAML Lint
-    runs-on: ubuntu-24.04
+    runs-on: [self-hosted, linux, x64, podman]
     continue-on-error: true
     steps:
       - name: Checkout code
@@ -82,7 +92,7 @@ jobs:
 
   dockerfile-lint:
     name: Dockerfile Lint
-    runs-on: ubuntu-24.04
+    runs-on: [self-hosted, linux, x64, podman]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -95,7 +105,7 @@ jobs:
 
   # image-build:
   #   name: Build Docker Image
-  #   runs-on: ubuntu-latest
+  #   runs-on: [self-hosted, linux, x64, podman]
   #   needs: [preflight-checks, yaml-validation, dockerfile-lint]
   #   steps:
   #     - name: Checkout code
@@ -116,7 +126,7 @@ jobs:
 
   memory-initialization:
     name: Memory Initialization Test
-    runs-on: ubuntu-24.04
+    runs-on: [self-hosted, linux, x64, podman]
     needs: [python-checks]
     steps:
       - name: Checkout code
@@ -143,7 +153,7 @@ jobs:
 
   pipeline-tests:
     name: Pipeline Regression Tests
-    runs-on: ubuntu-24.04
+    runs-on: [self-hosted, linux, x64, podman]
     needs: [python-checks]
     steps:
       - name: Checkout code
@@ -166,7 +176,7 @@ jobs:
 
   smoke-test:
     name: Smoke Test
-    runs-on: ubuntu-24.04
+    runs-on: [self-hosted, linux, x64, podman]
     needs: [preflight-checks, yaml-validation, dockerfile-lint]
     steps:
       - name: Checkout code
@@ -184,7 +194,7 @@ jobs:
 
   documentation-check:
     name: Documentation
-    runs-on: ubuntu-24.04
+    runs-on: [self-hosted, linux, x64, podman]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -198,7 +208,7 @@ jobs:
 
   test-results:
     name: Test Summary
-    runs-on: ubuntu-24.04
+    runs-on: [self-hosted, linux, x64, podman]
     needs: [python-checks, preflight-checks, ollama-health-check, yaml-validation, dockerfile-lint, memory-initialization, pipeline-tests, smoke-test, documentation-check]
     if: always()
     steps:
